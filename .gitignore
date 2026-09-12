@@ -1,0 +1,16 @@
+node_modules/
+.pnpm-store/
+dist/
+build/
+*.log
+.env
+.env.*
+!.env.example
+.keys/
+packages/contract/managed/
+packages/contract/out/
+packages/contract/artifacts/
+.DS_Store
+*.tsbuildinfo
+coverage/
+.vite/

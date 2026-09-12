@@ -1,0 +1,13 @@
+packages:
+  - "packages/*"
+allowBuilds:
+  '@swc/core': true
+  classic-level: true
+  esbuild: true
+  msgpackr-extract: true
+overrides:
+  "@midnight-ntwrk/ledger-v8": "8.1.0"
+  "@midnight-ntwrk/onchain-runtime-v3": "3.0.0"
+  "@midnight-ntwrk/wallet-sdk": "1.2.0"
+  "smoldot": "npm:empty-npm-package@1.0.0"
+  "@swc/core": "1.7.42"

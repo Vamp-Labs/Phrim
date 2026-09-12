@@ -1,0 +1,170 @@
+@font-face {
+  font-family: "GeistPixelCircle";
+  src: url("/fonts/GeistPixel-Circle.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "BubbledotICG-FinePos";
+  src: url("https:\2f\2fdb.onlinewebfonts.com/t/079b1c4dd1e71680ad995c57bbc38788.woff2") format("woff2"),
+    url("https:\2f\2fdb.onlinewebfonts.com/t/079b1c4dd1e71680ad995c57bbc38788.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+}
+
+body {
+  font-family: var(--font-ui);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--size-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+#root {
+  height: 100dvh;
+  height: 100vh;
+}
+
+img,
+svg,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100dvh;
+  height: 100vh;
+  overflow: hidden;
+  padding-block: var(--space-lg);
+  padding-inline: var(--space-lg);
+}
+
+.page__ascii {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-ascii-bg);
+  pointer-events: none;
+}
+
+.page__chrome {
+  position: relative;
+  z-index: var(--z-chrome);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: var(--space-md);
+}
+
+.page__content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--pill-dark) transparent;
+}
+
+.page__content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.page__content::-webkit-scrollbar-thumb {
+  background: var(--pill-dark);
+  border-radius: var(--radius-pill);
+}
+
+.page__content--dense {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md) var(--space-xl);
+  align-content: start;
+}
+
+@media (max-width: 720px) {
+  .page__content--dense {
+    grid-template-columns: 1fr;
+  }
+}
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-input);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

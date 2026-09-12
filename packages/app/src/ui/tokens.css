@@ -1,0 +1,78 @@
+:root {
+  --bg: #000000;
+  --text: #ffffff;
+  --muted: #8e8e8e;
+  --nav-text: #2e2e2e;
+  --pill-dark: #28282a;
+  --sign-in-text: #c8c8c8;
+  --nav-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
+  --trust-bg: #28282a;
+  --trust-border: rgba(255, 255, 255, 0.4);
+  --trust-text: #c4c2c3;
+
+  --space-3xs: clamp(2px, 0.2vw, 4px);
+  --space-2xs: clamp(4px, 0.4vw, 6px);
+  --space-xs: clamp(6px, 0.6vw, 8px);
+  --space-sm: clamp(8px, 1vw, 12px);
+  --space-md: clamp(12px, 1.4vw, 18px);
+  --space-lg: clamp(18px, 2.2vw, 28px);
+  --space-xl: clamp(26px, 3.2vw, 40px);
+  --space-2xl: clamp(36px, 4.6vw, 56px);
+
+  --radius-pill: 999px;
+  --radius-sheet: 28px;
+  --radius-card: 14px;
+  --radius-input: 10px;
+  --radius-tag: 6px;
+
+  --shadow-elevation: 0 4px 14px rgba(0, 0, 0, 0.16);
+  --glow-cta: 0 0 0 1px rgba(255, 255, 255, 0.15), 0 0 22px rgba(255, 255, 255, 0.32),
+    0 0 44px rgba(255, 255, 255, 0.12);
+  --border-translucent: rgba(255, 255, 255, 0.4);
+
+  --trust-size: clamp(36px, 4.5vw, 42px);
+  --trust-avatar-padding: 5px;
+  --trust-overlap: -0.42;
+
+  --brand-size: clamp(40px, 4.4vw, 46px);
+  --nav-pill-height: clamp(44px, 4.6vw, 48px);
+  --hamburger-size: 48px;
+  --drawer-backdrop: rgba(0, 0, 0, 0.62);
+  --drawer-blur: blur(6px);
+
+  --breakpoint-mobile: 720px;
+
+  --font-ui: Inter, "Segoe UI", system-ui, sans-serif;
+  --font-display: "BubbledotICG-FinePos", "GeistPixelCircle", monospace;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --size-hero: clamp(28px, 6.2vw, 80px);
+  --size-headline: clamp(20px, 3.4vw, 34px);
+  --size-body: clamp(14px, 1.05vw, 16px);
+  --size-meta: clamp(11px, 0.85vw, 13px);
+  --size-metric: clamp(20px, 2.4vw, 30px);
+
+  --outcome-success: #3ddc84;
+  --outcome-success-bg: rgba(61, 220, 132, 0.12);
+  --outcome-success-border: rgba(61, 220, 132, 0.5);
+  --outcome-danger: #ff5c5c;
+  --outcome-danger-bg: rgba(255, 92, 92, 0.12);
+  --outcome-danger-border: rgba(255, 92, 92, 0.5);
+
+  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--text);
+  --focus-ring-on-dark: 0 0 0 2px var(--bg), 0 0 0 4px var(--text);
+  --focus-ring-on-light: 0 0 0 2px var(--text), 0 0 0 4px var(--bg);
+
+  --disabled-opacity: 0.38;
+
+  --duration-fast: 160ms;
+  --duration-base: 300ms;
+  --duration-slow: 480ms;
+  --ease-out-cubic: cubic-bezier(0.215, 0.61, 0.355, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --z-ascii-bg: 0;
+  --z-chrome: 10;
+  --z-drawer: 50;
+}

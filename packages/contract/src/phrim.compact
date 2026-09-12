@@ -1,0 +1,275 @@
+pragma language_version 0.23;
+
+import CompactStandardLibrary;
+import "schnorr" prefix Schnorr_;
+
+export { Schnorr_SchnorrSignature };
+
+export enum FacilityStatus { Active, Frozen, Closed }
+
+export struct DrawReceipt {
+  drawId: Bytes<32>;
+  facilityId: Bytes<32>;
+  epoch: Uint<32>;
+  amount: Uint<128>;
+  resultingOutstanding: Uint<128>;
+  completed: Boolean;
+}
+
+export struct AssetCredential {
+  slotOccupied: Boolean;
+  schemaVersion: Uint<8>;
+  providerId: Uint<32>;
+  facilityId: Bytes<32>;
+  assetNonce: Bytes<32>;
+  outstandingMinor: Uint<64>;
+  daysPastDue: Uint<16>;
+  riskScore: Uint<16>;
+  maturityEpoch: Uint<32>;
+  snapshotEpoch: Uint<32>;
+  signatureAnnouncement: JubjubPoint;
+  signatureResponse: Field;
+}
+
+struct ChallengeInput1 {
+  ann_x: Field;
+  ann_y: Field;
+  pk_x: Field;
+  pk_y: Field;
+  msg: Vector<1, Field>;
+}
+
+export ledger facilityExists: Boolean;
+export ledger facilityId: Bytes<32>;
+export ledger lenderAuthorityHash: Bytes<32>;
+export ledger borrowerAuthorityHash: Bytes<32>;
+export ledger borrowerAddress: UserAddress;
+export ledger attestorProviderId: Uint<32>;
+export ledger attestorPublicKeyX: Field;
+export ledger attestorPublicKeyY: Field;
+export ledger tokenColor: Bytes<32>;
+export ledger creditLimit: Uint<128>;
+export ledger outstanding: Uint<128>;
+export ledger advanceRateBps: Uint<16>;
+export ledger maxDaysPastDue: Uint<16>;
+export ledger minRiskScore: Uint<16>;
+export ledger minRemainingEpochs: Uint<16>;
+export ledger currentEpoch: Uint<32>;
+export ledger status: FacilityStatus;
+export ledger drawReceipts: Map<Uint<64>, DrawReceipt>;
+export ledger drawCount: Counter;
+export ledger usedAssetNullifiers: Set<Bytes<32>>;
+
+export pure circuit credentialDigest(
+  schemaVersion: Uint<8>,
+  providerId: Uint<32>,
+  facilityIdArg: Bytes<32>,
+  assetNonce: Bytes<32>,
+  outstandingMinor: Uint<64>,
+  daysPastDue: Uint<16>,
+  riskScore: Uint<16>,
+  maturityEpoch: Uint<32>,
+  snapshotEpoch: Uint<32>
+): Bytes<32> {
+  return persistentHash<Vector<10, Bytes<32>>>([
+    pad(32, "phrim:credential:v1"),
+    schemaVersion as Bytes<32>,
+    providerId as Bytes<32>,
+    facilityIdArg,
+    assetNonce,
+    outstandingMinor as Bytes<32>,
+    daysPastDue as Bytes<32>,
+    riskScore as Bytes<32>,
+    maturityEpoch as Bytes<32>,
+    snapshotEpoch as Bytes<32>
+  ]);
+}
+
+export pure circuit assetNullifier(facilityIdArg: Bytes<32>, assetNonce: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<3, Bytes<32>>>([
+    pad(32, "phrim:asset-nullifier:v1"),
+    facilityIdArg,
+    assetNonce
+  ]);
+}
+
+export pure circuit computeChallenge1(
+  ann_x: Field,
+  ann_y: Field,
+  pk_x: Field,
+  pk_y: Field,
+  msg: Vector<1, Field>
+): Field {
+  return transientHash<ChallengeInput1>(
+    ChallengeInput1 { ann_x: ann_x, ann_y: ann_y, pk_x: pk_x, pk_y: pk_y, msg: msg }
+  );
+}
+
+export pure circuit deriveAuthorityHash(secret: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([pad(32, "phrim:authority:v1"), secret]);
+}
+
+pure circuit deriveDrawId(facilityIdArg: Bytes<32>, epoch: Uint<32>, amount: Uint<128>): Bytes<32> {
+  return persistentHash<Vector<4, Bytes<32>>>([
+    pad(32, "phrim:draw-id:v1"),
+    facilityIdArg,
+    epoch as Bytes<32>,
+    amount as Bytes<32>
+  ]);
+}
+
+export circuit createFacility(
+  facilityIdIn: Bytes<32>,
+  lenderSecret: Bytes<32>,
+  borrowerAuthorityHashIn: Bytes<32>,
+  borrowerAddressIn: UserAddress,
+  attestorProviderIdIn: Uint<32>,
+  attestorPublicKeyXIn: Field,
+  attestorPublicKeyYIn: Field,
+  creditLimitIn: Uint<128>,
+  advanceRateBpsIn: Uint<16>,
+  maxDaysPastDueIn: Uint<16>,
+  minRiskScoreIn: Uint<16>,
+  minRemainingEpochsIn: Uint<16>,
+  currentEpochIn: Uint<32>
+): [] {
+  assert(!facilityExists, "UNAUTHORIZED");
+  facilityId = disclose(facilityIdIn);
+  lenderAuthorityHash = disclose(deriveAuthorityHash(lenderSecret));
+  borrowerAuthorityHash = disclose(borrowerAuthorityHashIn);
+  borrowerAddress = disclose(borrowerAddressIn);
+  attestorProviderId = disclose(attestorProviderIdIn);
+  attestorPublicKeyX = disclose(attestorPublicKeyXIn);
+  attestorPublicKeyY = disclose(attestorPublicKeyYIn);
+  creditLimit = disclose(creditLimitIn);
+  outstanding = 0;
+  advanceRateBps = disclose(advanceRateBpsIn);
+  maxDaysPastDue = disclose(maxDaysPastDueIn);
+  minRiskScore = disclose(minRiskScoreIn);
+  minRemainingEpochs = disclose(minRemainingEpochsIn);
+  currentEpoch = disclose(currentEpochIn);
+  status = FacilityStatus.Active;
+  facilityExists = true;
+}
+
+export circuit fundOrMintDemoToken(lenderSecret: Bytes<32>, amount: Uint<64>): [] {
+  assert(facilityExists, "FACILITY_INACTIVE");
+  assert(deriveAuthorityHash(lenderSecret) == lenderAuthorityHash, "UNAUTHORIZED");
+  const minted = mintUnshieldedToken(
+    pad(32, "phrim:musd:v1"),
+    disclose(amount),
+    left<ContractAddress, UserAddress>(kernel.self())
+  );
+  tokenColor = disclose(minted);
+}
+
+export circuit freezeFacility(lenderSecret: Bytes<32>): [] {
+  assert(facilityExists, "FACILITY_INACTIVE");
+  assert(deriveAuthorityHash(lenderSecret) == lenderAuthorityHash, "UNAUTHORIZED");
+  status = FacilityStatus.Frozen;
+}
+
+export circuit closeFacility(lenderSecret: Bytes<32>): [] {
+  assert(facilityExists, "FACILITY_INACTIVE");
+  assert(deriveAuthorityHash(lenderSecret) == lenderAuthorityHash, "UNAUTHORIZED");
+  status = FacilityStatus.Closed;
+}
+
+export circuit vaultBalance(): Uint<128> {
+  return unshieldedBalance(tokenColor);
+}
+
+export circuit requestDraw(
+  facilityIdIn: Bytes<32>,
+  requestedAmountIn: Uint<128>,
+  credentials: Vector<8, AssetCredential>,
+  borrowerSecret: Bytes<32>
+): [] {
+  assert(facilityExists, "FACILITY_INACTIVE");
+  assert(status == FacilityStatus.Active, "FACILITY_INACTIVE");
+  assert(deriveAuthorityHash(borrowerSecret) == borrowerAuthorityHash, "UNAUTHORIZED");
+  const requestedAmount = disclose(requestedAmountIn);
+  assert(facilityIdIn == facilityId, "WRONG_FACILITY");
+  assert(requestedAmount > 0, "INSUFFICIENT_COLLATERAL");
+  assert(outstanding + requestedAmount <= creditLimit, "CREDIT_LIMIT_EXCEEDED");
+
+  const pk: JubjubPoint = constructJubjubPoint(attestorPublicKeyX, attestorPublicKeyY);
+
+  for (const i of 0..8) {
+    if (disclose(credentials[i].slotOccupied)) {
+      assert(credentials[i].providerId == attestorProviderId, "WRONG_FACILITY");
+      assert(credentials[i].facilityId == facilityId, "WRONG_FACILITY");
+      assert(credentials[i].snapshotEpoch == currentEpoch, "STALE_EPOCH");
+      const digest = credentialDigest(
+        credentials[i].schemaVersion,
+        credentials[i].providerId,
+        credentials[i].facilityId,
+        credentials[i].assetNonce,
+        credentials[i].outstandingMinor,
+        credentials[i].daysPastDue,
+        credentials[i].riskScore,
+        credentials[i].maturityEpoch,
+        credentials[i].snapshotEpoch
+      );
+      const msg: Vector<1, Field> = [degradeToTransient(digest)];
+      const sig = Schnorr_SchnorrSignature {
+        announcement: credentials[i].signatureAnnouncement,
+        response: credentials[i].signatureResponse
+      };
+      Schnorr_schnorrVerify<1>(msg, sig, pk);
+      assert(credentials[i].outstandingMinor > 0, "ASSET_INELIGIBLE");
+      assert(credentials[i].daysPastDue <= maxDaysPastDue, "ASSET_INELIGIBLE");
+      assert(credentials[i].riskScore >= minRiskScore, "ASSET_INELIGIBLE");
+      assert(credentials[i].maturityEpoch >= currentEpoch + minRemainingEpochs, "ASSET_INELIGIBLE");
+      const nul = disclose(assetNullifier(facilityId, credentials[i].assetNonce));
+      assert(!usedAssetNullifiers.member(nul), "ASSET_ALREADY_USED");
+      usedAssetNullifiers.insert(nul);
+    }
+  }
+
+  const occ0 = credentials[0].slotOccupied ? 1 : 0;
+  const occ1 = credentials[1].slotOccupied ? 1 : 0;
+  const occ2 = credentials[2].slotOccupied ? 1 : 0;
+  const occ3 = credentials[3].slotOccupied ? 1 : 0;
+  const occ4 = credentials[4].slotOccupied ? 1 : 0;
+  const occ5 = credentials[5].slotOccupied ? 1 : 0;
+  const occ6 = credentials[6].slotOccupied ? 1 : 0;
+  const occ7 = credentials[7].slotOccupied ? 1 : 0;
+  const selectedCount = occ0 + occ1 + occ2 + occ3 + occ4 + occ5 + occ6 + occ7;
+  assert(selectedCount > 0, "INSUFFICIENT_COLLATERAL");
+
+  const e0 = credentials[0].slotOccupied ? credentials[0].outstandingMinor : 0;
+  const e1 = credentials[1].slotOccupied ? credentials[1].outstandingMinor : 0;
+  const e2 = credentials[2].slotOccupied ? credentials[2].outstandingMinor : 0;
+  const e3 = credentials[3].slotOccupied ? credentials[3].outstandingMinor : 0;
+  const e4 = credentials[4].slotOccupied ? credentials[4].outstandingMinor : 0;
+  const e5 = credentials[5].slotOccupied ? credentials[5].outstandingMinor : 0;
+  const e6 = credentials[6].slotOccupied ? credentials[6].outstandingMinor : 0;
+  const e7 = credentials[7].slotOccupied ? credentials[7].outstandingMinor : 0;
+  const eligibleTotal = e0 + e1 + e2 + e3 + e4 + e5 + e6 + e7;
+
+  const lhs = eligibleTotal * advanceRateBps;
+  const rhs = requestedAmount * 10000;
+  assert(lhs >= rhs, "INSUFFICIENT_COLLATERAL");
+
+  assert(unshieldedBalanceGte(tokenColor, requestedAmount), "VAULT_INSUFFICIENT");
+
+  const nextOutstandingRaw = outstanding + requestedAmount;
+  assert(nextOutstandingRaw <= 340282366920938463463374607431768211455, "CREDIT_LIMIT_EXCEEDED");
+  const newOutstanding = disclose(nextOutstandingRaw as Uint<128>);
+  outstanding = newOutstanding;
+  const drawId = disclose(deriveDrawId(facilityId, currentEpoch, requestedAmount));
+  const receipt = disclose(DrawReceipt {
+    drawId: drawId,
+    facilityId: facilityId,
+    epoch: currentEpoch,
+    amount: requestedAmount,
+    resultingOutstanding: newOutstanding,
+    completed: true
+  });
+  const receiptIndex = disclose(drawCount.read());
+  drawReceipts.insert(receiptIndex, receipt);
+  drawCount.increment(1);
+
+  sendUnshielded(tokenColor, requestedAmount, right<ContractAddress, UserAddress>(borrowerAddress));
+}

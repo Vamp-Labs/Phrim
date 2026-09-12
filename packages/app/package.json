@@ -1,0 +1,60 @@
+{
+  "name": "@phrim/app",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -p tsconfig.json --noEmit && vite build",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-router-dom": "6.30.6",
+    "@midnight-ntwrk/midnight-js-contracts": "4.1.1",
+    "@midnight-ntwrk/midnight-js-types": "4.1.1",
+    "@midnight-ntwrk/midnight-js-protocol": "4.1.1",
+    "@midnight-ntwrk/midnight-js-utils": "4.1.1",
+    "@midnight-ntwrk/midnight-js-network-id": "4.1.1",
+    "@midnight-ntwrk/midnight-js-http-client-proof-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-indexer-public-data-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-fetch-zk-config-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-level-private-state-provider": "4.1.1",
+    "@midnight-ntwrk/dapp-connector-api": "4.0.1",
+    "@midnight-ntwrk/wallet-sdk": "1.2.0",
+    "@midnight-ntwrk/wallet-sdk-address-format": "3.1.2",
+    "@midnight-ntwrk/compact-runtime": "0.16.0",
+    "@midnight-ntwrk/ledger-v8": "8.1.0",
+    "schema": "workspace:*",
+    "@phrim/contract": "workspace:*"
+  },
+  "devDependencies": {
+    "@swc/core": "1.7.42",
+    "@types/node": "20.16.11",
+    "@types/react": "18.3.31",
+    "@types/react-dom": "18.3.7",
+    "@vitejs/plugin-react": "4.7.0",
+    "jsdom": "25.0.1",
+    "typescript": "5.5.4",
+    "vite": "5.4.21",
+    "vite-plugin-node-polyfills": "0.22.0",
+    "vite-plugin-top-level-await": "1.6.0",
+    "vite-plugin-wasm": "3.3.0",
+    "vitest": "2.1.9"
+  },
+  "overrides": {
+    "@midnight-ntwrk/ledger-v8": "8.1.0",
+    "@midnight-ntwrk/onchain-runtime-v3": "3.0.0",
+    "@midnight-ntwrk/wallet-sdk": "1.2.0",
+    "smoldot": "npm:empty-npm-package@1.0.0"
+  },
+  "resolutions": {
+    "@midnight-ntwrk/ledger-v8": "8.1.0",
+    "@midnight-ntwrk/onchain-runtime-v3": "3.0.0",
+    "@midnight-ntwrk/wallet-sdk": "1.2.0",
+    "smoldot": "npm:empty-npm-package@1.0.0"
+  }
+}
