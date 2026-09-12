@@ -138,14 +138,30 @@ for the `zkConfigProvider`/`proofProvider` pair, so one proof server serves both
 `scripts/deploy.ts` never fabricates, generates, or stores a wallet seed — `PHRIM_WALLET_MODULE` must
 point at a module exporting `walletProvider` and `midnightProvider` (the exact
 `@midnight-ntwrk/midnight-js-types` `WalletProvider` / `MidnightProvider` interfaces `deploy.ts`
-imports). On success it prints the deployed contract address as JSON.
+imports). On success it prints the deployed contract address, transaction id, transaction hash, and
+block hash as JSON. Local private state and the deployment's signing key are persisted to a LevelDB
+database at `.keys/midnight-level-db/` (override the location with `PHRIM_PRIVATE_STATE_DB`).
 
-**Confidence note on `wallet-wiring.mjs`, read before a real run:** every package name, exported
-function, and type shape it uses was confirmed by reading the actual installed `.d.ts` files under
-`node_modules/.pnpm/@midnight-ntwrk+wallet-sdk-*` — nothing was guessed or invented, and a dry import
-(`node -e "await import('./.keys/wallet-wiring.mjs')"` with no seed file present) fails at exactly the
-expected point (`ENOENT ... deployer-seed.txt`), confirming every SDK import and named export it uses
-genuinely exists and resolves. The one point that could not be confirmed by static reading alone —
+**Confidence note on `wallet-wiring.mjs`:** this module has now completed multiple real, funded
+Preprod deployments end to end (proving, balancing, submission, and on-chain finalization) — see
+"Contract address and known-good transaction" below. Two real defects were found and fixed along the
+way, both worth knowing if you hit them again:
+
+- **`relayURL` needs the `wss://` scheme, not `https://`.** `docs/handoffs/00-overview.md` §5.11.7
+  lists the Preprod node RPC endpoint as `https://rpc.preprod.midnight.network`; empirically, the
+  wallet SDK's underlying `@polkadot/rpc-provider` `WsProvider` requires `wss://`. `wallet-wiring.mjs`
+  uses `wss://rpc.preprod.midnight.network`.
+- **The first `submitTransaction` after a fresh `WalletFacade.init()` can fail with a client-issued
+  `1000: Normal Closure`.** Root-caused by instrumented tracing of `@polkadot/api`: the submission
+  service's `PolkadotNodeClient` connects once at init time to fetch chain metadata, then immediately
+  disconnects (by design, to avoid an idle socket). The very first `submitTransaction` call can race
+  that disconnect — `ensureConnection()` reads a stale `isConnected=true` before the WebSocket's
+  `close` event has actually been processed, and sends the real transaction on a socket that is
+  already closing. A plain retry succeeds, because by the second attempt `isConnected` correctly
+  reads `false` and a fresh connection is established before resending. `wallet-wiring.mjs`'s
+  `midnightProvider.submitTx` retries up to 3 times for exactly this reason.
+
+The one point that could not be confirmed by static reading alone —
 because no bundled example or test in the installed packages shows this exact end-to-end wiring — is
 whether `ZswapSecretKeys.fromSeed` / `DustSecretKey.fromSeed` / `ShieldedWallet(...).startWithSeed` /
 `DustWallet(...).startWithSeed` expect the **HD-role-derived 32-byte key** (what this module passes,
@@ -158,19 +174,56 @@ the facade wiring) is verified against real types with high confidence.
 
 ### Contract address and known-good transaction
 
-**Not yet deployed.** This environment had no funded Midnight wallet seed and none was provided —
-generating one would produce an unfunded wallet unable to pay transaction fees, so no deployment
-attempt was made rather than fabricate a non-functional one. The contract compiles cleanly with real
-proving keys (see Build, above) and its full circuit logic is verified by the test suite; on-chain
-deployment (local `undeployed` or Preprod) is the one acceptance item this environment could not
-complete. See the PM report for the full explanation. Once deployed, record here:
+**Deployed.** A deployer wallet was generated in this environment (`.keys/generate-wallet.mjs`),
+funded via the Preprod faucet, synced, and used to deploy Phrim for real — real ZK proving against a
+local `midnightntwrk/proof-server:8.1.0`, real fee payment in Dust, real on-chain finalization.
 
 ```
-Network:            <undeployed | preprod>
-Contract address:   <...>
-Known-good tx:      <transaction id / explorer link>
-Deployed by:        <date, operator>
+Network:            preprod
+Contract address:   f64afd02c9ec83f9121d1c01850bb91d71b57fc73e56e17e68620931c0a748df
+Known-good tx id:   00c4c9f65dccf06aad0cc8659883ed49f8dfa55007795a9c058d1519de1178a402
+Tx hash:            5e4a0f8e55a49ebf39530dc06db9b66b693b683329c0af15d7cc7815750fea49
+Block hash:         a17920eebf7770e34bcb53956af9e2376fcefd951c13baf6a0aa41966eb89534
+Deployed by:        Role 01 (Contract & Circuit Engineer), via `pnpm --filter @phrim/contract run deploy`
 ```
+
+This is the third deployment attempted against the same wallet, and the one with a complete, usable
+local deployment record (private state and signing key persisted under `.keys/midnight-level-db/`).
+The two earlier attempts each surfaced a real, now-fixed defect rather than being wasted effort:
+
+- The first attempt's on-chain transaction succeeded, but the script crashed immediately afterward
+  while persisting local private state — a throwaway `PHRIM_PRIVATE_STORAGE_PASSWORD` used only 2 of
+  the 3 required character classes — leaving a second, orphaned contract instance at
+  `e637e9cc636f7f3d086d850f93c4a8018fbfd449f567f7a76910148ae6a5047c` with no usable local record.
+- The second attempt succeeded in full, but revealed that `deploy.ts`'s private-state config was
+  using the wrong field: `privateStateStoreName` names a logical table *inside* a LevelDB database,
+  not the database's on-disk location — the actual location is controlled by `midnightDbName`, which
+  `deploy.ts` was never setting, so every deploy was silently writing to a fixed, unconfigurable
+  `./midnight-level-db` relative to whatever directory the command was run from (in practice,
+  `packages/contract/midnight-level-db`, outside `.keys/` and un-gitignored by name). `deploy.ts` now
+  sets `midnightDbName` explicitly to an absolute path under `.keys/`, so local deployment state is
+  co-located with the rest of the deployer's keys and reliably gitignored. That contract instance
+  (`e2f3fa14a90c7e80a8579492ef1d7404d32eec36d8191ec7640b60bb54149c44`) is otherwise fully valid on
+  chain, just recorded in a since-corrected local path.
+
+Redeploying costs one Dust-payable transaction; on Preprod that is inexpensive to repeat, so neither
+earlier attempt was treated as a blocker.
+
+Before this deployment could be attempted, the deployer wallet's single Night UTXO had to be
+registered for Dust generation (`.keys/register-dust.mjs`) — Dust is Midnight's decaying,
+time-accrued fee resource, generated only by *registered* Night UTXOs, and registration is a separate,
+explicit, fee-paying transaction in its own right. Getting that transaction to actually land
+surfaced two more real defects, independent of the connection-race note above:
+
+- **`registerNightUtxosForDustGeneration` already returns an internally-signed recipe.** Its return
+  value is `{ type: 'UNPROVEN_TRANSACTION', transaction: <already-signed Transaction> }` — calling
+  `facade.signRecipe()` on it again (a reasonable-looking next step, and what the first attempt did)
+  re-signs an already-signed transaction and corrupts its signature/input count, which the node
+  rejects at the mempool level with `1010: Invalid Transaction: Custom error: 192`
+  (`MalformedError::InputsSignaturesLengthMismatch` in the node's ledger types). The fix is to pass
+  the recipe straight to `facade.finalizeRecipe()` with no extra signing step.
+- The same connection-race note above applies to `facade.submitTransaction()` in this flow too, and
+  is handled the same way (a 3-attempt retry) in `.keys/register-dust.mjs`.
 
 ## Rehearsal reset procedure
 

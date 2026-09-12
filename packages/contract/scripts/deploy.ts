@@ -18,7 +18,7 @@ export type DeployEnv = {
   indexerUrl: string;
   indexerWsUrl: string;
   proofServerUrl: string;
-  privateStateStoreName: string;
+  midnightDbName: string;
   accountId: string;
   privateStoragePassword: string;
 };
@@ -41,17 +41,15 @@ export function readDeployEnv(): DeployEnv {
     indexerUrl: process.env['PHRIM_INDEXER_URL'] ?? 'http://localhost:8088/api/v4/graphql',
     indexerWsUrl: process.env['PHRIM_INDEXER_WS_URL'] ?? 'ws://localhost:8088/api/v4/graphql/ws',
     proofServerUrl: process.env['PHRIM_PROOF_SERVER_URL'] ?? 'http://localhost:6300',
-    privateStateStoreName: process.env['PHRIM_PRIVATE_STATE_STORE'] ?? '.keys/phrim-private-state',
+    midnightDbName:
+      process.env['PHRIM_PRIVATE_STATE_DB'] ??
+      new URL('../../../.keys/midnight-level-db', import.meta.url).pathname,
     accountId,
     privateStoragePassword,
   };
 }
 
-export async function deployPhrim(
-  env: DeployEnv,
-  walletProvider: WalletProvider,
-  midnightProvider: MidnightProvider,
-): Promise<{ contractAddress: string }> {
+export async function deployPhrim(env: DeployEnv, walletProvider: WalletProvider, midnightProvider: MidnightProvider) {
   setNetworkId(env.networkId);
 
   const zkConfigProvider = new NodeZkConfigProvider<
@@ -60,7 +58,7 @@ export async function deployPhrim(
   const proofProvider = httpClientProofProvider(env.proofServerUrl, zkConfigProvider);
   const publicDataProvider = indexerPublicDataProvider(env.indexerUrl, env.indexerWsUrl);
   const privateStateProvider = levelPrivateStateProvider<typeof PHRIM_PRIVATE_STATE_ID>({
-    privateStateStoreName: env.privateStateStoreName,
+    midnightDbName: env.midnightDbName,
     accountId: env.accountId,
     privateStoragePasswordProvider: () => env.privateStoragePassword,
   });
@@ -84,7 +82,12 @@ export async function deployPhrim(
     },
   );
 
-  return { contractAddress: deployed.deployTxData.public.contractAddress };
+  return {
+    contractAddress: deployed.deployTxData.public.contractAddress,
+    txId: deployed.deployTxData.public.txId,
+    txHash: deployed.deployTxData.public.txHash,
+    blockHash: deployed.deployTxData.public.blockHash,
+  };
 }
 
 async function main(): Promise<void> {

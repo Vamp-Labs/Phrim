@@ -10,6 +10,7 @@ build/
 packages/contract/managed/
 packages/contract/out/
 packages/contract/artifacts/
+packages/contract/midnight-level-db/
 .DS_Store
 *.tsbuildinfo
 coverage/
