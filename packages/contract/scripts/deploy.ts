@@ -108,7 +108,11 @@ async function main(): Promise<void> {
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
 }
 
-main().catch((error: unknown) => {
-  process.stderr.write(`${String(error instanceof Error ? (error.stack ?? error.message) : error)}\n`);
-  process.exitCode = 1;
-});
+main()
+  .then(() => {
+    process.exit(0);
+  })
+  .catch((error: unknown) => {
+    process.stderr.write(`${String(error instanceof Error ? (error.stack ?? error.message) : error)}\n`);
+    process.exit(1);
+  });

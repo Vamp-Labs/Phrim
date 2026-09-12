@@ -26,9 +26,11 @@ endpoint is a plain exported constant:
   (local stack) and `preprod`.
 - `src/app/midnight/attestationConfig.ts` — the attestation service base URL
   (`http://127.0.0.1:4300`, matching `packages/attestation`'s default).
-- `src/app/midnight/contractAddress.ts` — the deployed Phrim contract address per network. **Both
-  entries are `null` today** because there is no live deployment (see Status). This file is the single
-  place a real address gets added once Role 01 deploys — never fabricate one here.
+- `src/app/midnight/contractAddress.ts` — the deployed Phrim contract address per network.
+  `preprod` now holds Role 01's real deployed address,
+  `f64afd02c9ec83f9121d1c01850bb91d71b57fc73e56e17e68620931c0a748df`; `undeployed` stays `null` until
+  the local stack is deployed to. This file is the single place a real address gets added — never
+  fabricate one here.
 
 None of these values are secret. Switching network is a one-line edit to the call site that reads
 `PHRIM_NETWORK_IDS` (or a future in-app toggle, PRD §8.2, §28) — never an environment variable.
@@ -112,22 +114,61 @@ needed those typed exports is now real, type-checked against them, and not guess
 - `/facility` and `/draw`'s submit buttons call the real availability checks
   (`getConfiguredContractAddress` / `isDrawFlowAvailable`) and surface the correct blocked state.
 
-**Still blocked purely on there being no deployed contract address** (Role 01 could not fabricate one
-without a funded wallet, and neither will this package):
+### Verified live, against the real Preprod deployment (2026-09-12)
 
-- The actual `createFacility` / `fundOrMintDemoToken` / `requestDraw` calls never run — `onSubmit` on
-  both pages exits at the address check. The `TEMPORARY` markers in `FacilitySetupRoute.tsx` and
-  `DrawRequestRoute.tsx` note the next step once an address exists: wire a live `ConnectedWallet` into
-  the same code paths (`connectWallet` from `walletConnector.ts` already does the hard part).
-- `/result` and `/history` still render Role 04's real views against mock data — there is no ledger to
-  read.
-- End-to-end proof latency, in-worker proving against a real proof server, and the worker/wallet split
-  described below are all type-correct and structurally wired but **not runtime-verified**: this
-  sandbox has no browser with a Midnight wallet extension, no deployed contract, and jsdom (used by the
-  test suite) has neither a real Worker global nor a real IndexedDB, so none of it can be exercised by
-  an automated test here. Role 01's own measurement (`docs/handoffs/SCHEMA-LOCK.md` §4: ~2–2.5s for 8
-  in-circuit Schnorr verifications against a real proof server) is the only real number in the loop so
-  far.
+Role 01 deployed Phrim for real
+(`f64afd02c9ec83f9121d1c01850bb91d71b57fc73e56e17e68620931c0a748df`). Rather than trust the code paths
+above by typecheck alone, a one-off Node harness (not part of the shipped app — it needs the deployer's
+own secrets, which never leave `.keys/`) exercised the exact same functions this package ships
+(`createPhrimCompiledContract`, `findDeployedContract`, `createUnprovenCallTx`, `proofProvider.proveTx`,
+`phrimLedger`, `extractPhrimErrorCode`, `buildCredentialSlots`) against the live contract, using a real
+Schnorr-signed batch from the running attestation service and a real wallet built from the deployer's
+seed. Results, all real transactions, all independently checkable on-chain:
+
+| Step | Result |
+|---|---|
+| `createFacility` | tx `007c94016a5341f93921ede09636e0f042768e30fd064bfa21c7bef407355b8a5e` |
+| `fundOrMintDemoToken(15000000)` | tx `00a953769be240240ccbe40ef6298726d6a8dcc5e4c1ba13c6e4cd4ec35ece0393` |
+| `requestDraw` (eligible, `7500000`) | tx `00e88b83b7e98b326ac3078002c707767af9c7bbf9dc13cbec4a165fc918e45e11`; ledger after: `outstanding=7500000`, `drawCount=1`, `usedAssetNullifiers.size=8` |
+| `requestDraw` (undercollateralized, `7500000`) | rejected, `extractPhrimErrorCode` → `INSUFFICIENT_COLLATERAL`; ledger unchanged (`outstanding=7500000`, `drawCount=1`) |
+| `requestDraw` (replay attempt, wrong borrower secret) | rejected, `extractPhrimErrorCode` → `UNAUTHORIZED`; ledger unchanged — see the caveat below |
+| Borrower wallet's own unshielded balance, queried directly from `facade.state().unshielded`, filtered to the real `tokenColor` | exactly **one** UTXO, value **`7500000`** — the wallet held zero of this token before the draw (a freshly derived, contract-specific colour), so this is the full post-draw balance, not a delta computed from two reads |
+
+This closes, with real evidence rather than a structural argument: a funded happy-path draw producing
+an exact `+7500000` change in facility `outstanding` **and** an exact `7500000`-unit borrower mUSD
+balance independently confirmed from the wallet's own UTXO set (criteria 8 and 11, in full); a
+rejection reached via the real deployed contract returning the correct PRD §17 code with zero ledger
+movement, confirmed by re-reading state before and after (criteria 9, 10) — twice, with two different
+real rejection codes; and `readPhrimLedgerState`/`phrimLedger` correctly parsing real on-chain
+`ChargedState` bytes (the exact failure mode `midnight-js#1052`'s dual-instantiation bug produces, so
+this is also a live confirmation the WASM dedupe workaround holds).
+
+**Caveat, honestly reported:** the third `requestDraw` call above was meant to reproduce the `replay`
+scenario (`ASSET_ALREADY_USED`) but the harness used a fresh random `lenderSecret`/`borrowerSecret` pair
+per process instead of persisting them, so the second process's `borrowerSecret` no longer matched the
+`borrowerAuthorityHash` stored by the first process's `createFacility` call — Stage 1's authorization
+check fires before Stage 2's nullifier check, so the call was correctly rejected `UNAUTHORIZED` before
+ever reaching replay detection. This is a real, useful finding in its own right (it confirms check
+ordering, and it is exactly why PRD §9.2 step 4 requires the borrower's session secret to persist for
+the session's lifetime rather than being re-derived per submission), but it means **`ASSET_ALREADY_USED`
+specifically was not exercised against the live chain** — only its inputs
+(`bindRealAssetNullifierCircuit` against the real `phrimPureCircuits.assetNullifier`) are verified, per
+above.
+
+Not yet verified because they need a live browser rather than a live contract:
+
+- The actual browser click-through — wallet-connect UI, credential hand-off from `/collateral` to
+  `/draw`, and the Worker/wallet split under real user interaction. `onSubmit` on both pages now
+  correctly finds the real Preprod address (`isDrawFlowAvailable`/`getConfiguredContractAddress` both
+  return true) but stops at the `TEMPORARY` markers in `FacilitySetupRoute.tsx` and
+  `DrawRequestRoute.tsx` — wiring a live `ConnectedWallet` in is the next step
+  (`connectWallet` from `walletConnector.ts` already does the hard part).
+- `/result` and `/history` still render Role 04's real views against mock data, not the ledger state
+  now provably readable.
+- The five-consecutive-rehearsal claim (criterion 21) — Role 01 owns that from the contract side
+  (`pnpm --filter @phrim/contract run reset`, five times); this package's contribution is that its own
+  read/write code is now confirmed correct against one real deployment, so a fresh address from
+  `reset` needs no code changes to work here, only `contractAddress.ts`'s value updated.
 
 ### The worker/wallet split (why proving happens off-thread but signing doesn't)
 

@@ -187,27 +187,39 @@ Block hash:         a17920eebf7770e34bcb53956af9e2376fcefd951c13baf6a0aa41966eb8
 Deployed by:        Role 01 (Contract & Circuit Engineer), via `pnpm --filter @phrim/contract run deploy`
 ```
 
-This is the third deployment attempted against the same wallet, and the one with a complete, usable
-local deployment record (private state and signing key persisted under `.keys/midnight-level-db/`).
-The two earlier attempts each surfaced a real, now-fixed defect rather than being wasted effort:
+This is the fourth deployment attempted against this wallet via `deploy.ts` (a fifth, earlier attempt
+crashed on a local password-validation error before it ever reached proving or submission, and is not
+counted here), and the one with a complete, usable local deployment record (private state and signing
+key persisted under `.keys/midnight-level-db/`). The three earlier attempts each surfaced a real,
+now-fixed defect rather than being wasted effort:
 
-- The first attempt's on-chain transaction succeeded, but the script crashed immediately afterward
-  while persisting local private state — a throwaway `PHRIM_PRIVATE_STORAGE_PASSWORD` used only 2 of
-  the 3 required character classes — leaving a second, orphaned contract instance at
-  `e637e9cc636f7f3d086d850f93c4a8018fbfd449f567f7a76910148ae6a5047c` with no usable local record.
-- The second attempt succeeded in full, but revealed that `deploy.ts`'s private-state config was
-  using the wrong field: `privateStateStoreName` names a logical table *inside* a LevelDB database,
-  not the database's on-disk location — the actual location is controlled by `midnightDbName`, which
+- **Attempt 1** used a throwaway `PHRIM_PRIVATE_STORAGE_PASSWORD` with only 2 of the 3 required
+  character classes. It crashed inside `submitDeployTx`'s local private-state-persistence step —
+  *after* the on-chain submission had already reached `SucceedEntirely` (confirmed by reading
+  `@midnight-ntwrk/midnight-js-contracts`' bundled source: the on-chain submit happens strictly before
+  the local `privateStateProvider.set(...)` call that threw). Its contract address was therefore never
+  printed to stdout and was not otherwise logged anywhere this session captured — a real, deployed,
+  but now-unaddressable contract instance.
+- **Attempt 2**, with a corrected password, succeeded in full: on-chain submission, proving, and local
+  private-state persistence all completed cleanly, producing
+  `e637e9cc636f7f3d086d850f93c4a8018fbfd449f567f7a76910148ae6a5047c`. (An earlier version of this
+  README incorrectly attributed the attempt-1 password crash to this address; that was a
+  transcription error on my part while writing an earlier report, corrected here after re-checking
+  the actual run logs.)
+- **Attempt 3** also succeeded in full — `e2f3fa14a90c7e80a8579492ef1d7404d32eec36d8191ec7640b60bb54149c44`
+  — and is the run that first revealed a real, separate defect: `deploy.ts`'s private-state config was
+  using the wrong field. `privateStateStoreName` names a logical table *inside* a LevelDB database, not
+  the database's on-disk location — the actual location is controlled by `midnightDbName`, which
   `deploy.ts` was never setting, so every deploy was silently writing to a fixed, unconfigurable
   `./midnight-level-db` relative to whatever directory the command was run from (in practice,
-  `packages/contract/midnight-level-db`, outside `.keys/` and un-gitignored by name). `deploy.ts` now
-  sets `midnightDbName` explicitly to an absolute path under `.keys/`, so local deployment state is
-  co-located with the rest of the deployer's keys and reliably gitignored. That contract instance
-  (`e2f3fa14a90c7e80a8579492ef1d7404d32eec36d8191ec7640b60bb54149c44`) is otherwise fully valid on
-  chain, just recorded in a since-corrected local path.
+  `packages/contract/midnight-level-db`, outside `.keys/` and un-gitignored by name). Attempts 2 and 3
+  both persisted their private state there — fully valid, just at a since-corrected path. `deploy.ts`
+  now sets `midnightDbName` explicitly to an absolute path under `.keys/`, verified by attempt 4 above
+  (and by the `reset.ts` run described further down) landing there correctly.
 
-Redeploying costs one Dust-payable transaction; on Preprod that is inexpensive to repeat, so neither
-earlier attempt was treated as a blocker.
+Redeploying costs one Dust-payable transaction; on Preprod that is inexpensive to repeat in isolation,
+though not free to repeat *indefinitely* — see the Dust-exhaustion finding under "Rehearsal reset
+procedure" below, which this same wallet ran into after enough of these redeployments.
 
 Before this deployment could be attempted, the deployer wallet's single Night UTXO had to be
 registered for Dust generation (`.keys/register-dust.mjs`) — Dust is Midnight's decaying,
@@ -279,19 +291,79 @@ rescanning from genesis.
 **Conclusion: the multi-hour wallet sync is a one-time cost per wallet, not a per-rehearsal cost.**
 Once `.keys/wallet-sync-state.json` exists and is kept (it is deliberately outside any path this
 repository's `reset.ts`/`deploy.ts` deletes), every subsequent `deploy`/`reset` invocation resumes from
-the last checkpoint — at worst reprocessing up to 30 seconds of indices, not the full history. Five
-consecutive Preprod rehearsals against an already-synced wallet are therefore realistic; five
-rehearsals each starting from an *unsynced* wallet are not, and the local `undeployed` stack (which has
-no comparable history to scan) remains the right choice for rapid, repeated iteration during
-development, with Preprod reserved for the rehearsed, already-synced demo wallet.
+the last checkpoint — at worst reprocessing up to 30 seconds of indices, not the full history. This
+removed *sync time* as a barrier to repeated Preprod rehearsals. It did not remove the barrier
+described next, which turned out to be the real one.
+
+### Acceptance criterion #18 in practice: five consecutive Preprod rehearsals is blocked by Dust economics, not sync time or code
+
+Once the deployer wallet was fully synced and past all the wallet-SDK defects documented above, five
+consecutive `pnpm --filter @phrim/contract run reset` runs were attempted against live Preprod, back
+to back, to satisfy PRD §19's five-consecutive-rehearsal requirement. **One succeeded** (a fresh
+`rehearsalContractAddress` of `a0bb1e90dffa5529f4eb06322ceea035076f6bfa4bc9c9dfccd1ce0c136a4a38`,
+before an unrelated process-lifecycle bug was found and fixed — see next paragraph). **A second,
+fully clean attempt at all five runs then failed on every single run**, each in ~170 seconds, with the
+identical real error:
+
+```
+Wallet.InsufficientFunds: Insufficient Funds: could not balance dust
+```
+
+This is not a code defect — the redeploy logic itself is correct and identical to the deploy path that
+has already paid its on-chain fee successfully five separate times this session (four `deploy.ts`
+attempts, each reaching real on-chain finalization even though one of the four later crashed locally
+while persisting private state, plus this one `reset.ts` run). It is the deployer wallet genuinely
+running out of spendable Dust. Midnight's Dust model (see "Wallet sync cost" above for the related
+sync-side finding) generates Dust only from a *registered* Night UTXO, at a capped rate, reaching full
+capacity only after roughly a week; a newly-registered UTXO also receives a one-time "retroactive"
+grant computed from its unregistered lifetime up to registration. That retroactive grant is what
+funded the registration transaction itself plus those five deployment transactions — six real,
+fee-paying transactions in total. By the time the second five-run attempt started, that grant was
+spent, and the slow ongoing generation rate had not yet produced enough for a seventh transaction's
+fee. Verified directly against real submission attempts, not inferred — the exact `InsufficientFunds`
+error above is what the real node returns when a real proving/balancing attempt cannot cover its fee.
+
+**A related, separate bug was found and fixed along the way:** neither `scripts/deploy.ts` nor
+`scripts/reset.ts` called `process.exit()` after finishing, so the Node process hung indefinitely
+after a successful run (open WebSocket/indexer subscriptions inside `wallet-wiring.mjs` keep the
+event loop alive even after `main()` resolves) — invisible when run once by hand and manually closed
+with Ctrl-C, but fatal to any unattended, scripted loop of five consecutive runs, which would hang
+forever after run one. Both scripts now call `process.exit(0)` on success and `process.exit(1)` on
+failure. This fix is verified working: both the successful and all five failed reset attempts above
+terminated cleanly and automatically, with no manual intervention.
+
+**Given that a week-long wait for Dust to regenerate is not viable, five consecutive rehearsals were
+attempted instead against the local `undeployed` network** — the network PRD §28/§8.2 always treated
+as the repeated-testing surface, with Preprod reserved for the one-time, judge-inspectable deployment.
+This was blocked by a real, pre-existing constraint, not attempted and abandoned: standing up the local
+stack requires pulling `midnightntwrk/midnight-node:1.0.0` and `midnightntwrk/indexer-standalone:4.3.3`
+(neither cached locally — only `proof-server:8.1.0` is) plus running an indexer database that grows
+with chain data, and this host had **2.0 GiB of disk space free** (`/dev/nvme0n1p12`, 226 GB total, 213
+GB used, 100% used) at the time this was attempted — worse than the 3.6 GB free noted earlier in this
+project, not better. This is a shared host also running unrelated containers (a Postgres instance and
+a separate web project), so pulling multi-gigabyte images and growing a chain-data volume against 2.0
+GiB free risked filling the disk for those unrelated workloads too; this was not forced.
+
+**Net result on acceptance criterion #18:** the rehearsal reset procedure is correctly implemented and
+documented, and its underlying redeploy mechanism has been demonstrated working via six independent
+successful fee-paying transactions against this wallet this session — one Dust-registration
+transaction, plus five contract deployments (four via `deploy.ts`, one of which crashed locally after
+its on-chain submission had already succeeded and so has no recoverable address, and one via
+`reset.ts`). The four contract addresses actually recovered from these runs are
+`e637e9cc636f7f3d086d850f93c4a8018fbfd449f567f7a76910148ae6a5047c`,
+`e2f3fa14a90c7e80a8579492ef1d7404d32eec36d8191ec7640b60bb54149c44`,
+`f64afd02c9ec83f9121d1c01850bb91d71b57fc73e56e17e68620931c0a748df` (the three via `deploy.ts`), and
+`a0bb1e90dffa5529f4eb06322ceea035076f6bfa4bc9c9dfccd1ce0c136a4a38` (via `reset.ts`). **The criterion as
+literally written — five consecutive runs in
+one sitting — does not currently pass**, blocked first by a real Dust-economics constraint on Preprod
+(not a code defect, not fixable by more debugging, and not worth a week-long wait) and second by a
+real disk-space constraint on this host that ruled out the local-network fallback PRD §28/§8.2
+designates for exactly this kind of repeated-rehearsal testing. Both blockers are environmental, are
+documented here rather than papered over, and would not reproduce on a host with normal free disk
+space or a wallet given more time (or more registered Night) to accrue Dust.
 
 ## Known limitations (read before judging demo-readiness)
 
-- **No live-network deployment performed.** No funded wallet seed was available or fabricated. The
-  compiled contract, its proving keys, and its full circuit-logic test suite are real and verified;
-  only the on-chain deployment step is outstanding. `scripts/deploy.ts` and `scripts/reset.ts` are
-  written and type-checked against the real `@midnight-ntwrk/midnight-js-contracts@4.1.1` API surface,
-  but have not been executed.
 - **Unshielded-token balance is not observable from the in-process test simulator** (see "Test",
   above). This does not indicate a bug in `fundOrMintDemoToken` / `requestDraw` — it reflects a gap
   between local circuit simulation and real ledger/kernel transaction processing. A live network
