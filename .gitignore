@@ -7,7 +7,6 @@ build/
 .env.*
 !.env.example
 .keys/
-packages/contract/managed/
 packages/contract/out/
 packages/contract/artifacts/
 packages/contract/midnight-level-db/
@@ -15,3 +14,4 @@ packages/contract/midnight-level-db/
 *.tsbuildinfo
 coverage/
 .vite/
+docs/
