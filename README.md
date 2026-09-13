@@ -187,6 +187,22 @@ Block hash:         a17920eebf7770e34bcb53956af9e2376fcefd951c13baf6a0aa41966eb8
 Deployed by:        Role 01 (Contract & Circuit Engineer), via `pnpm --filter @phrim/contract run deploy`
 ```
 
+#### All contract instances deployed this session (Preprod)
+
+Every one of these submitted and finalized a real on-chain transaction from the same deployer wallet.
+Only the current row is live/canonical for judging; the rest are superseded and listed for full
+transparency rather than omitted.
+
+| # | Contract address | Deployed via | Status |
+|---:|---|---|---|
+| 1 | *(unrecoverable — never printed)* | `deploy.ts` attempt 1 | Real, deployed on-chain; local process then crashed persisting private state before the address could be logged. Not addressable, not reusable. |
+| 2 | `e637e9cc636f7f3d086d850f93c4a8018fbfd449f567f7a76910148ae6a5047c` | `deploy.ts` attempt 2 | Successful. Superseded. |
+| 3 | `e2f3fa14a90c7e80a8579492ef1d7404d32eec36d8191ec7640b60bb54149c44` | `deploy.ts` attempt 3 | Successful. Superseded — this run is where the `midnightDbName` local-state path bug was found. |
+| 4 | **`f64afd02c9ec83f9121d1c01850bb91d71b57fc73e56e17e68620931c0a748df`** | `deploy.ts` attempt 4 | **Current / canonical.** Known-good tx id `00c4c9f65dccf06aad0cc8659883ed49f8dfa55007795a9c058d1519de1178a402`, above. |
+| 5 | `a0bb1e90dffa5529f4eb06322ceea035076f6bfa4bc9c9dfccd1ce0c136a4a38` | `reset.ts` (first successful rehearsal reset) | Successful. Superseded — proves the rehearsal-reset mechanism itself works; see "Rehearsal reset procedure" below for why four further consecutive resets then failed on Dust exhaustion, not a code defect. |
+
+Full narrative for each row — what was attempted, what failed, and what was fixed — follows below.
+
 This is the fourth deployment attempted against this wallet via `deploy.ts` (a fifth, earlier attempt
 crashed on a local password-validation error before it ever reached proving or submission, and is not
 counted here), and the one with a complete, usable local deployment record (private state and signing
