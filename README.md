@@ -445,6 +445,17 @@ somehow already hold a production borrower's private key. Your wallet's job is s
 Preprod transaction fee and to be the on-chain signer of record; the `mUSD` payout still goes to the
 address registered when the facility was created, not to your own wallet.
 
+**Verify it independently on Midnight's block explorer** — not our UI:
+
+```
+https://preprod.midnightexplorer.com/contracts/<contract address>
+```
+
+That page shows the deployment transaction, deployment block, live ledger-state hash, and
+`requestDraw` as a contract entry point. Note that individual transaction deep-links
+(`/transactions/<hash>`) return 404 on this explorer at time of writing; the contract page is the
+reliable view.
+
 Current live demo facility, provisioned for this purpose:
 
 ```

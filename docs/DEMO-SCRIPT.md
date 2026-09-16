@@ -16,8 +16,10 @@ Run through all of these first. Any one of them missing will break the demo on c
 | 4 | Live facility provisioned with the published demo secret | `/app/history` shows `Active`, outstanding `$0.00`, and no draw receipts |
 | 5 | Browser zoom at 100%, window ~1440×900 | Layout is designed single-viewport; zoom breaks it |
 | 6 | Lace unlocked *before* recording | Avoids a password prompt mid-take |
+| 7 | Lace network set to **Preprod** | Otherwise connect fails with a network-mismatch error |
+| 8 | Explorer tab pre-opened on the contract page | `preprod.midnightexplorer.com/contracts/<address>` |
 
-**Two tabs open, in this order:** (1) `https://app-production-db4a.up.railway.app` (2) Lace extension pinned to the toolbar.
+**Three tabs open, in this order:** (1) `https://app-production-db4a.up.railway.app` (2) `https://preprod.midnightexplorer.com/contracts/<address>` (3) Lace extension pinned to the toolbar.
 
 > If step 4 isn't ready yet, you can still record everything up to 2:35 — the failure-path
 > sections are the only parts that need a live funded facility.
@@ -128,11 +130,29 @@ Run through all of these first. Any one of them missing will break the demo on c
 
 **SAY (on the result page):**
 > "Draw funded. Outstanding went from zero to seventy-five thousand. Eight nullifiers consumed.
-> And there's the contract address and the transaction ID — you can go look it up yourself."
+> And this isn't self-reported — here's the contract on Midnight's own block explorer."
 
 **INTERACTION:**
 - Point at the **Draw funded** badge, then the settlement metric cards.
 - Point at **Contract address** and **Transaction id**.
+- Switch to the pre-opened explorer tab (see below) and point at **Entry Point: requestDraw**
+  and the deployment block number.
+
+> **Third-party proof shot — open this tab before recording:**
+> `https://preprod.midnightexplorer.com/contracts/<CONTRACT_ADDRESS>`
+>
+> For the currently deployed contract that resolves to:
+> `https://preprod.midnightexplorer.com/contracts/f64afd02c9ec83f9121d1c01850bb91d71b57fc73e56e17e68620931c0a748df`
+>
+> It shows the contract address, its deployment transaction, the deployment block
+> (#2,517,782, Sep 12 2026), the live ledger-state hash, and `requestDraw` as an entry point —
+> on Midnight's own explorer, not our UI. This is the strongest single "it's really on-chain"
+> shot in the demo.
+>
+> **Verified caveat:** individual transaction deep-links
+> (`/transactions/<hash>`) currently 404 on this explorer, so don't script a click through to a
+> specific transaction — stay on the contract page. Update the address in the URL after the
+> facility is re-provisioned.
 
 ---
 
