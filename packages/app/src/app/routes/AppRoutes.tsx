@@ -7,7 +7,7 @@ import { HistoryRoute } from './HistoryRoute';
 
 export function AppRoutes() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/app">
       <Routes>
         <Route path="/" element={<Navigate to="/facility" replace />} />
         <Route path="/facility" element={<FacilitySetupRoute />} />
