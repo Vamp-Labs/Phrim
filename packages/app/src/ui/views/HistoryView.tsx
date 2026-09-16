@@ -58,7 +58,7 @@ export function HistoryView({ vm, onNavigate }: HistoryViewProps) {
 
       <div className="view-section">
         <p className="view-section__title">Balances</p>
-        <div className="metric-row">
+        <div className="metric-row grid-hairline">
           <MetricCard label="Vault liquidity" value={formatMinorToDisplay(vm.vaultMinor)} />
           <MetricCard label="Outstanding drawn" value={formatMinorToDisplay(vm.outstandingMinor)} />
           <MetricCard label="Remaining capacity" value={formatMinorToDisplay(vm.capacityMinor)} />

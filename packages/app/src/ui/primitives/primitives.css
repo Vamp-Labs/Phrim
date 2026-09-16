@@ -174,10 +174,7 @@ input:disabled,
 }
 
 .metric-counter-grid {
-  display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1px;
-  background: var(--border);
 }
 
 @media (max-width: 720px) {
@@ -745,11 +742,7 @@ input:disabled,
 }
 
 .metric-row {
-  display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 1px;
-  background: var(--border);
-  border: 1px solid var(--border);
 }
 
 .row-actions {

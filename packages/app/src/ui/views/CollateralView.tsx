@@ -101,7 +101,7 @@ export function CollateralView({ vm, onScenarioSelect, onContinue, onNavigate }:
 
       <div className="view-section">
         <p className="view-section__title">Local preview</p>
-        <div className="metric-row">
+        <div className="metric-row grid-hairline">
           <MetricCard label="Eligible total" value={formatMinorToDisplay(vm.previewTotalMinor)} />
           <MetricCard label="Supportable draw" value={formatMinorToDisplay(vm.previewSupportsMinor)} />
           <MetricCard

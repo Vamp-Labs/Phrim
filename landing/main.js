@@ -209,6 +209,20 @@
     setActive(0);
   }
 
+  function setupInfrastructure() {
+    var rows = Array.prototype.slice.call(document.querySelectorAll("#infraRows .infra-row"));
+    if (!rows.length) return;
+    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return;
+    var index = 0;
+    setInterval(function () {
+      index = (index + 1) % rows.length;
+      rows.forEach(function (row, i) {
+        row.classList.toggle("is-active", i === index);
+      });
+    }, 2000);
+  }
+
   function setupDevTabs() {
     var tabs = Array.prototype.slice.call(document.querySelectorAll(".code-panel__tabs button"));
     var codeEl = $("devCode");
@@ -466,6 +480,7 @@
     setupReveals();
     setupMetrics();
     setupHowSteps();
+    setupInfrastructure();
     setupDevTabs();
     setupCtaSpotlight();
     setupLiveClock();

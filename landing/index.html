@@ -23,6 +23,7 @@
         <a href="#how-it-works">How it works</a>
         <a href="#security">Security</a>
         <a href="#developers">Developers</a>
+        <a href="#pricing">Pricing</a>
       </nav>
       <div class="nav__actions">
         <a class="btn btn--ghost" href="#developers">Docs</a>
@@ -39,6 +40,7 @@
     <a href="#how-it-works">How it works</a>
     <a href="#security">Security</a>
     <a href="#developers">Developers</a>
+    <a href="#pricing">Pricing</a>
     <div class="mobile-menu__ctas">
       <a class="btn btn--primary" href="/app/facility">Launch App</a>
       <button type="button" class="btn btn--outline" id="menuClose">Close</button>
@@ -170,6 +172,42 @@
     </div>
   </section>
 
+  <section class="section" id="infrastructure">
+    <div class="section__inner infra__inner">
+      <div class="infra__copy reveal">
+        <p class="eyebrow"><span class="eyebrow__rule"></span> Infrastructure</p>
+        <h2 class="section__title">Proven where it <span class="muted">runs.</span></h2>
+        <p class="lead">No hosted proof server, no shortcuts. Every private computation happens on the borrower's own machine, verified against a real network.</p>
+        <div class="infra__stats grid-hairline">
+          <div class="infra__stat">
+            <span class="infra__stat-value">Preprod</span>
+            <span class="infra__stat-label">+ local fallback network</span>
+          </div>
+          <div class="infra__stat">
+            <span class="infra__stat-value">1</span>
+            <span class="infra__stat-label">Web Worker proof isolation</span>
+          </div>
+          <div class="infra__stat">
+            <span class="infra__stat-value">4</span>
+            <span class="infra__stat-label">Prepared failure paths</span>
+          </div>
+        </div>
+      </div>
+      <aside class="infra__panel reveal" aria-label="Runtime status">
+        <div class="infra__panel-head">
+          <span class="mono">Runtime status</span>
+          <span class="live-pill"><span class="live-dot"></span> Operational</span>
+        </div>
+        <ul class="infra__rows" id="infraRows">
+          <li class="infra-row is-active"><span>Lace Wallet</span><span class="mono muted">Connected</span></li>
+          <li class="infra-row"><span>Proof Server</span><span class="mono muted">Ready</span></li>
+          <li class="infra-row"><span>Midnight Indexer</span><span class="mono muted">Synced</span></li>
+          <li class="infra-row"><span>Contract</span><span class="mono muted">Preprod</span></li>
+        </ul>
+      </aside>
+    </div>
+  </section>
+
   <section class="section metrics-section" id="metrics" aria-label="Phrim demo figures">
     <div class="section__inner">
       <header class="metrics-section__header reveal">
@@ -179,7 +217,7 @@
         </div>
         <div class="live-pill"><span class="live-dot"></span> <span id="liveClock" class="mono">Live</span></div>
       </header>
-      <div class="metrics-grid">
+      <div class="metrics-grid grid-hairline">
         <div class="metric-cell reveal" data-prefix="$" data-target="75000" data-decimals="0">
           <span class="metric-cell__value">$0</span>
           <span class="metric-cell__label">Demo draw amount</span>
@@ -196,6 +234,39 @@
           <span class="metric-cell__value">&lt; 60s</span>
           <span class="metric-cell__label">Target proof latency</span>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section integrations" id="integrations">
+    <div class="section__inner">
+      <header class="integrations__header reveal">
+        <p class="eyebrow eyebrow--center"><span class="eyebrow__rule"></span> Integrations <span class="eyebrow__rule"></span></p>
+        <h2 class="section__title">Built on real infrastructure.<br><span class="muted">Nothing borrowed, nothing fake.</span></h2>
+      </header>
+    </div>
+    <div class="integrations__marquee" aria-hidden="true">
+      <div class="marquee-track marquee-track--reverse">
+        <span class="integration-chip">Midnight Network</span>
+        <span class="integration-chip">Compact</span>
+        <span class="integration-chip">Midnight Preprod</span>
+        <span class="integration-chip">Lace Wallet</span>
+        <span class="integration-chip">Schnorr / Jubjub</span>
+        <span class="integration-chip">Midnight Indexer</span>
+        <span class="integration-chip">Proof Server</span>
+        <span class="integration-chip">Web Worker</span>
+        <span class="integration-chip">Vite</span>
+        <span class="integration-chip">React</span>
+        <span class="integration-chip">Midnight Network</span>
+        <span class="integration-chip">Compact</span>
+        <span class="integration-chip">Midnight Preprod</span>
+        <span class="integration-chip">Lace Wallet</span>
+        <span class="integration-chip">Schnorr / Jubjub</span>
+        <span class="integration-chip">Midnight Indexer</span>
+        <span class="integration-chip">Proof Server</span>
+        <span class="integration-chip">Web Worker</span>
+        <span class="integration-chip">Vite</span>
+        <span class="integration-chip">React</span>
       </div>
     </div>
   </section>
@@ -252,15 +323,15 @@
         <p class="eyebrow"><span class="eyebrow__rule"></span> Developers</p>
         <h2 class="section__title">Schema, prove, submit</h2>
         <p class="lead">Circuit bindings, golden vectors, wallet adapter, and attestation server — one coherent demo path.</p>
-        <div class="dev-grid">
+        <div class="dev-grid grid-hairline">
           <div class="dev-cell"><span class="mono">01</span><strong>Circuit binding</strong></div>
           <div class="dev-cell"><span class="mono">02</span><strong>Golden vectors</strong></div>
           <div class="dev-cell"><span class="mono">03</span><strong>Wallet adapter</strong></div>
           <div class="dev-cell"><span class="mono">04</span><strong>Attestation</strong></div>
         </div>
         <div class="dev-links">
-          <a href="https://github.com" class="text-link">Read the docs</a>
-          <a href="https://github.com" class="text-link">View on GitHub</a>
+          <a href="#developers" class="text-link">Read the docs</a>
+          <a href="#developers" class="text-link">View on GitHub</a>
         </div>
       </div>
       <aside class="code-panel code-panel--light reveal">
@@ -271,6 +342,30 @@
         </div>
         <pre class="code-panel__body"><code id="devCode"></code></pre>
       </aside>
+    </div>
+  </section>
+
+  <section class="section" id="pricing">
+    <div class="section__inner pricing__inner">
+      <header class="section__header reveal">
+        <p class="eyebrow"><span class="eyebrow__rule"></span> Pricing</p>
+        <h2 class="section__title">A hypothesis,<br>not a <span class="muted">committed price.</span></h2>
+        <p class="lead pricing__lead">Sales-assisted SaaS priced per active facility plus verified draw volume. This is a hypothesis to validate, not a committed price. The value case is reduced operational review, fewer routine copies of sensitive data, and faster funding decisions.</p>
+      </header>
+      <div class="pricing__structure grid-hairline reveal">
+        <div class="pricing__cell">
+          <span class="pricing__cell-label">Priced per</span>
+          <span class="pricing__cell-value">Active facility</span>
+        </div>
+        <div class="pricing__cell">
+          <span class="pricing__cell-label">Plus</span>
+          <span class="pricing__cell-value">Verified draw volume</span>
+        </div>
+      </div>
+      <div class="pricing__footer reveal">
+        <a class="btn btn--outline" href="#cta">Talk to us about pilot terms</a>
+        <p class="pricing__note mono">Sourced from PRD §23.4 — pricing hypothesis, not a live commercial offer</p>
+      </div>
     </div>
   </section>
 
@@ -307,6 +402,7 @@
           <a href="#how-it-works">How it works</a>
           <a href="#metrics">Numbers</a>
           <a href="#security">Security</a>
+          <a href="#pricing">Pricing</a>
         </div>
         <div>
           <h4>Developers</h4>

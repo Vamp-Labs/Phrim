@@ -13,48 +13,71 @@ measured numbers in §9 reflect the real implementation rather than a promise ma
 
 ## 1 Token reference
 
-### 1.1 The ten PRD tokens — verbatim, unchanged
+### 1.1 The core palette — light editorial OKLCH, superseding the PRD's original dark spec
 
-`packages/app/src/ui/tokens.css` and `landing/styles.css` both declare these ten custom properties
-with the exact names and values from PRD §16.1.1 / handoff I.1:
+PRD §16.1.1 originally specified a pure-black dark palette (`--bg:#000000`, `--text:#ffffff`, etc.).
+During a later design-refresh pass, the palette was deliberately changed to a light, near-monochrome
+OKLCH "editorial" direction (aligned with a reference design's warm off-white/near-black system) and
+carried through a subsequent visual-redesign pass. **The PRD's dark values are historical, not
+current** — `packages/app/src/ui/tokens.css` and `landing/styles.css` both declare the following as
+the actual shipped tokens:
 
 | Token | Value |
 |---|---|
-| `--bg` | `#000000` |
-| `--text` | `#ffffff` |
-| `--muted` | `#8e8e8e` |
-| `--nav-text` | `#2e2e2e` |
-| `--pill-dark` | `#28282a` |
-| `--sign-in-text` | `#c8c8c8` |
-| `--nav-shadow` | `0 4px 14px rgba(0, 0, 0, 0.16)` |
-| `--trust-bg` | `#28282a` |
-| `--trust-border` | `rgba(255, 255, 255, 0.4)` |
-| `--trust-text` | `#c4c2c3` |
+| `--bg` | `oklch(0.985 0.002 90)` |
+| `--text` | `oklch(0.12 0.01 60)` |
+| `--muted` | `oklch(0.45 0.02 60)` |
+| `--surface` | `oklch(1 0 0)` |
+| `--border` | `color-mix(in oklab, var(--text) 10%, transparent)` |
+| `--border-strong` | `color-mix(in oklab, var(--text) 20%, transparent)` |
+| `--nav-shadow` | `0 8px 30px color-mix(in oklab, var(--text) 8%, transparent)` |
+| `--live` | `#16a34a` |
+
+`--border`/`--border-strong` are the project's equivalent of the reference design's `border-foreground/10`
+and `border-foreground/20` — every hairline divider, card edge, and hover-state border in both
+`landing/` and `packages/app/src/ui/**` should derive from one of these two, never a new one-off
+`color-mix()` call.
 
 `landing/` and `packages/app/` are two independent build targets (a zero-build static site and a Vite
 SPA). They cannot share a single CSS file without introducing a build step into `landing/`, which PRD
-§16.1 forbids. The ten tokens and every extension token below are therefore **duplicated by design** —
-both files are generated from this document, and any token change must land in both places. This is
-recorded so nobody "fixes" the duplication by importing one file into the other later.
+§16.1 forbids. The tokens are therefore **duplicated by design** — both files are generated from this
+document, and any token change must land in both places. This is recorded so nobody "fixes" the
+duplication by importing one file into the other later.
 
 ### 1.2 Extension tokens (this document is their only specification)
 
 | Token | Value | Rationale |
 |---|---|---|
 | `--space-3xs` … `--space-2xl` | `clamp()` ladder, `2px`→`56px` | GAP-1. A geometric-ish scale (roughly ×1.4 per step) expressed as `clamp()` so every gap shrinks together at low viewport heights — this is what makes the single-viewport rule (§2) survive 720p and 375×667 without a second, cramped scale for "mobile". |
-| `--radius-card` | `14px` | GAP-4, GAP-8, GAP-9. Card/table/panel radius. Distinct from the PRD's pill (`999px`) and sheet (`28px`) radii, sized for the smaller card components the PRD never specified. |
-| `--radius-input` | `10px` | GAP-3. Input field radius, also reused as the focus-ring border-radius (§1.4). |
-| `--radius-tag` | `6px` | GAP-5. Small enough to read as a tag, not a pill or a card. |
-| `--outcome-success` / `--outcome-success-bg` / `--outcome-success-border` | `#3ddc84` and derived rgba tints | GAP-15, see §3 below. |
-| `--outcome-danger` / `--outcome-danger-bg` / `--outcome-danger-border` | `#ff5c5c` and derived rgba tints | GAP-15, see §3 below. |
+| `--radius` | `0.25rem` | Sharp, small base radius for cards/tables/panels — deliberately smaller than a typical SaaS default, contrasted against fully-pill (`999px`) CTAs and nav. `--radius-card`/`--radius-input`/`--radius-tag` all resolve to this one value; there is no longer a separate `14px` card radius. |
+| `--radius-pill` | `999px` | Nav, CTAs, chips. |
+| `--radius-sheet` | `1rem` | Mobile drawer sheet. |
+| `--outcome-success` / `--outcome-success-bg` / `--outcome-success-border` | `#15803d` and derived `color-mix()` tints | GAP-15, see §3 below. |
+| `--outcome-danger` / `--outcome-danger-bg` / `--outcome-danger-border` | `#dc2626` and derived `color-mix()` tints | GAP-15, see §3 below. |
 | `--focus-ring` | `0 0 0 2px var(--bg), 0 0 0 4px var(--text)` | GAP-11, see §4 below. |
 | `--disabled-opacity` | `0.38` | GAP-12, see §5 below. |
 | `--duration-fast` / `--duration-base` / `--duration-slow` | `160ms` / `300ms` / `480ms` | Named durations backing `revealPulse` (`480ms`, per §16.1.3's counter/CTA feel), `AsciiMorph` (`300ms`, PRD §16.2.2, exact), and hover/focus transitions (`160ms`). |
-| `--ease-out-cubic` / `--ease-standard` | cubic-bezier pairs | `easeOutCubic` is spelled out because the PRD names it exactly for the metric counters (§16.1.3); `--ease-standard` is the generic Material-style `cubic-bezier(0.4,0,0.2,1)` used for hover/focus, which the PRD never names but implies with "GPU-accelerated cubic-bezier transitions". |
+| `--ease-out-cubic` / `--ease-standard` / `--ease-spring` | cubic-bezier triples | `easeOutCubic` is spelled out because the PRD names it exactly for the metric counters (§16.1.3); `--ease-standard` is the generic Material-style `cubic-bezier(0.4,0,0.2,1)` used for hover/focus; `--ease-spring` (`cubic-bezier(0.34,1.56,0.64,1)`) backs the bouncy CTA hover-lift added in the visual-redesign pass. |
 | `--z-ascii-bg` / `--z-chrome` / `--z-drawer` | `0` / `10` / `50` | The PRD only pins the background canvas at `z-index: 0` (§16.2.1). Chrome and the mobile drawer needed values above it and above each other; `50` leaves headroom below `--z-chrome` for anything layered later without a renumber. |
 
-Every extension name is lowercase-hyphenated with no prefix, matching the ten base tokens' own
-convention (no `--phrim-` or `--ds-` prefix anywhere).
+Every extension name is lowercase-hyphenated with no prefix, matching the base tokens' own convention
+(no `--phrim-` or `--ds-` prefix anywhere).
+
+### 1.3 Reference-alignment additions (visual redesign pass)
+
+Added while rebuilding the landing page and refining the app's design system against an external
+reference's visual language (hairline borders instead of shadows, 1px-gap-grid card dividers, sharp
+radius contrasted with pill CTAs — a pattern already partly present in this project's own tokens):
+
+- **`.grid-hairline`** (`packages/app/src/ui/base.css`, duplicated in `landing/styles.css`) — the
+  formalization of the "1px gap on a `var(--border)` background = divider lines, no per-card shadow"
+  trick, previously duplicated ad hoc in `.metric-counter-grid`, `.metric-row`, and landing's
+  `.metrics-grid`/`.dev-grid`. Apply the class alongside a component's own grid-template-columns rule;
+  do not reintroduce a bespoke `gap:1px;background:var(--border)` pair anywhere — compose this class
+  instead.
+- **`.view-section__title::before`** (`base.css`) — a 1.25rem hairline tick before every in-app section
+  label, reproducing the same eyebrow-tick pattern `landing/`'s `.eyebrow__rule` already implements, for
+  free (no markup change — `.view-section__title` was already `inline-flex` with a `gap`).
 
 ---
 
@@ -268,6 +291,50 @@ Both `@font-face` blocks therefore reference the CDN host using a CSS character 
 (`https:\2f\2fdb.onlinewebfonts.com/...`) instead of a literal double slash — valid CSS (`\2f` is the
 standard escape for `/` inside a string or `url()` token) that resolves to the identical URL at parse
 time, chosen specifically so the two-slash sequence never appears as literal source text.
+
+**Note on §8.1–8.4:** these describe an earlier design iteration. Two later passes replaced the
+dot-matrix display font with Google-hosted Instrument Sans/Serif + JetBrains Mono (§1.1) and the dark
+palette with the light OKLCH palette (§1.1); the headline/subhead/CTA/metric-footer *pattern* described
+in §8.1 still holds, but the literal copy and font family named there have since evolved. §8.5 below
+documents the current landing-page section list.
+
+### 8.5 Landing-page section rebuild — three sections adapted for content honesty
+
+A later visual-redesign pass rebuilt the landing page section-by-section against an external design
+reference, adding three sections the reference has that Phrim's page didn't, and one deliberate
+removal. All three additions needed adaptation because the reference's versions rely on content this
+project cannot honestly ship for a hackathon MVP — the same reasoning that governs §8.2's trust-row
+removal above:
+
+- **Infrastructure** (`#infrastructure`) — the reference fabricates global edge-network numbers ("17
+  data centers," "99.99% uptime SLA," a status panel cycling six world cities). Replaced with real
+  runtime facts instead: a three-cell stat row (Preprod + local fallback network; one Web Worker for
+  proof isolation; four prepared failure paths, PRD §16/§29) and a "Runtime status" panel cycling four
+  real components (Lace Wallet, Proof Server, Midnight Indexer, Contract network). No fabricated
+  latency or uptime figure appears anywhere in this section.
+- **Integrations** (`#integrations`) — the reference marquees real company logos to imply
+  partnerships. Replaced with a marquee of Phrim's actual technology dependencies (Midnight Network,
+  Compact, Midnight Preprod, Lace Wallet, `@midnight-ntwrk/wallet-api`,
+  `@midnight-ntwrk/midnight-js-contracts`, Schnorr/Jubjub, Midnight Indexer, Proof Server, Web Worker,
+  Vite, React) — real names only, the same "no implied partnership that doesn't exist" rule as §8.2.
+- **Pricing** (`#pricing`) — the reference renders a three-tier price table with `$`/month figures and
+  a "Most Popular" badge, which would misrepresent a hackathon MVP as a live commercial product with
+  committed pricing. Replaced with a narrative treatment quoting PRD §23.4 verbatim — *"Sales-assisted
+  SaaS priced per active facility plus verified draw volume. This is a hypothesis to validate, not a
+  committed price."* — plus a two-cell structural row (`Priced per — Active facility` /
+  `Plus — Verified draw volume`) and a small mono citation of "PRD §23.4" so the hypothesis framing is
+  visible in the page itself, not only in this document. No dollar figure, tier name, or toggle appears.
+- **Testimonials** — dropped entirely; no fabricated customer quotes exist to put there.
+- **Placeholder links** — the reference's Developers-section and footer GitHub links pointed at bare
+  `https://github.com`. Phrim has no public repository yet, so both now route to the in-page
+  `#developers` anchor instead of a dead or misleading external link.
+
+Also added in this pass: `.grid-hairline` (§1.3) applied to the new Infrastructure stat row and Pricing
+structural row, plus the existing Metrics/Developers grids; a `marquee-reverse` keyframe (previously
+only a forward `marquee` existed) driving the Integrations marquee in the opposite direction from the
+Hero marquee; and the Security section's right-column rows changed from a border-bottom list to
+individually hairline-bordered boxes, matching the reference's per-row card treatment (hover-inverts
+icon behavior unchanged).
 
 ---
 

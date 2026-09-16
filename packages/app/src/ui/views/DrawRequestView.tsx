@@ -42,7 +42,7 @@ export function DrawRequestView({ vm, onAmountChange, onSubmit, onNavigate }: Dr
         <p className="view-section__title">
           Public disclosure <PrivacyTag visibility="public" />
         </p>
-        <div className="metric-row">
+        <div className="metric-row grid-hairline">
           <MetricCard label="Facility" value={vm.publicDisclosure.facilityIdShort} />
           <MetricCard label="Epoch" value={String(vm.publicDisclosure.epoch)} />
           <MetricCard

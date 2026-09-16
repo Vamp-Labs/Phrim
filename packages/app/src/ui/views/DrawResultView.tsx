@@ -30,7 +30,7 @@ export function DrawResultView({ vm, onViewHistory, onNavigate }: DrawResultView
         <>
           <div className="view-section">
             <p className="view-section__title">Settlement</p>
-            <div className="metric-row">
+            <div className="metric-row grid-hairline">
               <MetricCard label="Amount funded" value={formatMinorToDisplay(vm.amountMinor)} />
               <MetricCard label="Prior outstanding" value={formatMinorToDisplay(vm.priorOutstandingMinor)} />
               <MetricCard label="New outstanding" value={formatMinorToDisplay(vm.newOutstandingMinor)} />
@@ -41,7 +41,7 @@ export function DrawResultView({ vm, onViewHistory, onNavigate }: DrawResultView
           </div>
           <div className="view-section">
             <p className="view-section__title">Onchain reference</p>
-            <div className="metric-row">
+            <div className="metric-row grid-hairline">
               <MetricCard label="Contract address" value={truncateMiddle(vm.contractAddress)} />
               <MetricCard label="Transaction id" value={truncateMiddle(vm.txId)} />
             </div>
