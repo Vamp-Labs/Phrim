@@ -238,6 +238,28 @@ input:disabled,
   align-items: center;
 }
 
+.wallet-connect-group {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.wallet-connect__error {
+  position: absolute;
+  top: calc(100% + var(--space-2xs));
+  right: 0;
+  max-width: 22rem;
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--outcome-danger-border);
+  background: var(--bg);
+  color: var(--outcome-danger);
+  font-family: var(--font-ui);
+  font-size: var(--size-meta);
+  line-height: 1.4;
+  border-radius: var(--radius);
+  z-index: var(--z-drawer);
+}
+
 .wallet-connect {
   font-size: var(--size-meta);
 }
