@@ -51,7 +51,25 @@ export async function connectWallet(networkId: NetworkId, preferredKey?: string)
       `Wallet connector "${key}" has no connect() method; found: ${Object.keys(initialApi).join(', ')}`,
     );
   }
-  const api = await initialApi.connect(networkId);
+  let api: ConnectedAPI;
+  try {
+    api = await initialApi.connect(networkId);
+  } catch (cause: unknown) {
+    const detail = cause instanceof Error ? cause.message : String(cause);
+    throw new Error(
+      `Your wallet could not connect on the "${networkId}" network. Phrim's demo contract is deployed on ` +
+        `Preprod, so switch your wallet's Midnight network to Preprod and reconnect. Wallet reported: ${detail}`,
+    );
+  }
+
+  const configuration = await api.getConfiguration();
+  if (configuration.networkId !== networkId) {
+    throw new Error(
+      `Wallet is connected to "${configuration.networkId}" but Phrim's demo contract is deployed on ` +
+        `"${networkId}". Switch your wallet's Midnight network to ${networkId} and reconnect.`,
+    );
+  }
+
   const { unshieldedAddress } = await api.getUnshieldedAddress();
   const { shieldedCoinPublicKey, shieldedEncryptionPublicKey } = await api.getShieldedAddresses();
   return { api, unshieldedAddress, shieldedCoinPublicKey, shieldedEncryptionPublicKey };
