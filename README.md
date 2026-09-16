@@ -390,6 +390,46 @@ space or a wallet given more time (or more registered Night) to accrue Dust.
   mid-range laptop, well inside the PRD §19 60-second budget with large headroom, so Phrim uses the
   full eight active credential slots (the four-plus-four contingency was not triggered).
 
+## Judge self-service: connecting your own wallet
+
+The deployed app (`packages/app`) has a real "Connect Wallet" control in the header of every page,
+wired to `@midnight-ntwrk/dapp-connector-api`'s real `connect()`/`getUnshieldedAddress()`/
+`getUnshieldedBalances()` calls — not a mock. Once connected, `/draw`'s "Prove and Request Draw" button
+runs the real proof-and-submit flow (`packages/app/src/app/state/drawSettlement.ts`) against the live
+Preprod contract, using your connected wallet to pay the transaction fee and a signed credential batch
+fetched live from the deployed attestation service.
+
+**To try it yourself as a judge:**
+
+1. Install [Lace](https://www.lace.io/) with Midnight support enabled, and fund it with some Preprod
+   tNight from the faucet: <https://midnight-tmnight-preprod.nethermind.dev/>.
+2. Run a local proof server (see "Local proof server" above) — this is required on **every** network,
+   including Preprod, because Midnight has no hosted proof server: it would have to see your private
+   witness inputs to prove anything, which defeats the entire point of Phrim. Proving always happens on
+   your own machine.
+3. Open the deployed app, click "Connect Wallet" in the header, approve the connection in Lace.
+4. Go to `/collateral`, pick a demo scenario (defaults to "eligible"), then `/draw`, enter an amount
+   within policy, and click "Prove and Request Draw."
+
+**Why you don't need to know a secret to do this:** Phrim's borrower authorization is a private witness
+check (`deriveAuthorityHash(borrowerSecret) == facility.borrowerAuthorityHash`, PRD §14.4), deliberately
+decoupled from wallet identity — connecting a wallet alone is not sufficient to authorize a draw on a
+real facility, by design. For this hackathon demo, the borrower secret used to create the live facility
+is intentionally public and already baked into the client
+(`packages/app/src/app/midnight/demoSecrets.ts`) — this is safe because the demo facility protects no
+real value, and publishing it is what makes true self-service possible without asking every judge to
+somehow already hold a production borrower's private key. Your wallet's job is solely to pay the
+Preprod transaction fee and to be the on-chain signer of record; the `mUSD` payout still goes to the
+address registered when the facility was created, not to your own wallet.
+
+Current live demo facility, provisioned for this purpose:
+
+```
+Network:              preprod
+Contract address:     PENDING — see docs/handoffs/SCHEMA-LOCK.md or ask the team for the latest
+Published borrower secret (hex): PENDING
+```
+
 ## Repository layout
 
 ```

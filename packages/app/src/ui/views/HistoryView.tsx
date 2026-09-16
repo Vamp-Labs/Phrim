@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { DrawReceiptVM, HistoryVM } from "../../viewmodels/types";
 import { formatMinorToDisplay } from "../format";
 import { DataTable, type DataTableColumn } from "../primitives/DataTable";
@@ -10,6 +11,7 @@ import { buildNavItems } from "./navItems";
 export interface HistoryViewProps {
   vm: HistoryVM;
   onNavigate?: (id: string) => void;
+  walletSlot?: ReactNode;
 }
 
 function statusGlyph(status: HistoryVM["status"]): string {
@@ -49,9 +51,15 @@ const COLUMNS: DataTableColumn<DrawReceiptVM>[] = [
   },
 ];
 
-export function HistoryView({ vm, onNavigate }: HistoryViewProps) {
+export function HistoryView({ vm, onNavigate, walletSlot }: HistoryViewProps) {
   return (
-    <PageShell themeId="merkle-dag" title="Facility History" navItems={buildNavItems("history")} onNavigate={onNavigate}>
+    <PageShell
+      themeId="merkle-dag"
+      title="Facility History"
+      navItems={buildNavItems("history")}
+      onNavigate={onNavigate}
+      headerExtra={walletSlot}
+    >
       <div className="view-section">
         <StatusBadge glyph={statusGlyph(vm.status)} label={vm.status} />
       </div>

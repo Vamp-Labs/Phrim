@@ -232,6 +232,28 @@ input:disabled,
   }
 }
 
+.app-header__extra {
+  flex: none;
+  display: flex;
+  align-items: center;
+}
+
+.wallet-connect {
+  font-size: var(--size-meta);
+}
+
+.wallet-connect--connected {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  height: var(--nav-pill-height);
+  padding-inline: var(--space-lg);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  white-space: nowrap;
+}
+
 .hamburger {
   display: none;
   width: var(--hamburger-size);

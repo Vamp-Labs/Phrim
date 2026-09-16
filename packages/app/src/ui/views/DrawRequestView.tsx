@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { DrawRequestVM } from "../../viewmodels/types";
 import { formatMinorToDisplay } from "../format";
 import { ErrorPanel } from "../primitives/ErrorPanel";
@@ -14,6 +15,7 @@ export interface DrawRequestViewProps {
   onAmountChange?: (rawValue: string) => void;
   onSubmit?: () => void;
   onNavigate?: (id: string) => void;
+  walletSlot?: ReactNode;
 }
 
 function isProofInFlight(stage: DrawRequestVM["stage"]): boolean {
@@ -22,11 +24,23 @@ function isProofInFlight(stage: DrawRequestVM["stage"]): boolean {
   );
 }
 
-export function DrawRequestView({ vm, onAmountChange, onSubmit, onNavigate }: DrawRequestViewProps) {
+export function DrawRequestView({
+  vm,
+  onAmountChange,
+  onSubmit,
+  onNavigate,
+  walletSlot,
+}: DrawRequestViewProps) {
   const isBusy = isProofInFlight(vm.stage);
 
   return (
-    <PageShell themeId="circuit-synth" title="Draw Request" navItems={buildNavItems("draw")} onNavigate={onNavigate}>
+    <PageShell
+      themeId="circuit-synth"
+      title="Draw Request"
+      navItems={buildNavItems("draw")}
+      onNavigate={onNavigate}
+      headerExtra={walletSlot}
+    >
       <div className="view-section">
         <p className="view-section__title">Requested draw</p>
         <InputField

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { DrawResultVM } from "../../viewmodels/types";
 import { formatMinorToDisplay, truncateMiddle } from "../format";
 import { ErrorPanel } from "../primitives/ErrorPanel";
@@ -11,13 +12,20 @@ export interface DrawResultViewProps {
   vm: DrawResultVM;
   onViewHistory?: () => void;
   onNavigate?: (id: string) => void;
+  walletSlot?: ReactNode;
 }
 
-export function DrawResultView({ vm, onViewHistory, onNavigate }: DrawResultViewProps) {
+export function DrawResultView({ vm, onViewHistory, onNavigate, walletSlot }: DrawResultViewProps) {
   const funded = vm.outcome === "funded";
 
   return (
-    <PageShell themeId="settlement" title="Draw Result" navItems={buildNavItems("result")} onNavigate={onNavigate}>
+    <PageShell
+      themeId="settlement"
+      title="Draw Result"
+      navItems={buildNavItems("result")}
+      onNavigate={onNavigate}
+      headerExtra={walletSlot}
+    >
       <div className="view-section">
         {funded ? (
           <StatusBadge glyph="✓" label="Draw funded" tone="outcome-positive" />

@@ -15,3 +15,4 @@ export * from "./MetricCard";
 export * from "./ScenarioSelector";
 export * from "./EmptyState";
 export * from "./LoadingIndicator";
+export * from "./WalletConnectButton";

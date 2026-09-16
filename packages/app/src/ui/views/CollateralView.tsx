@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { CollateralVM, CredentialRowVM } from "../../viewmodels/types";
 import type { ScenarioId } from "../primitives/ScenarioSelector";
 import { formatMinorToDisplay } from "../format";
@@ -15,6 +16,7 @@ export interface CollateralViewProps {
   onScenarioSelect?: (id: ScenarioId) => void;
   onContinue?: () => void;
   onNavigate?: (id: string) => void;
+  walletSlot?: ReactNode;
 }
 
 function signatureBadge(row: CredentialRowVM) {
@@ -80,9 +82,21 @@ const COLUMNS: DataTableColumn<CredentialRowVM>[] = [
   },
 ];
 
-export function CollateralView({ vm, onScenarioSelect, onContinue, onNavigate }: CollateralViewProps) {
+export function CollateralView({
+  vm,
+  onScenarioSelect,
+  onContinue,
+  onNavigate,
+  walletSlot,
+}: CollateralViewProps) {
   return (
-    <PageShell themeId="matrix-stream" title="Private Collateral" navItems={buildNavItems("collateral")} onNavigate={onNavigate}>
+    <PageShell
+      themeId="matrix-stream"
+      title="Private Collateral"
+      navItems={buildNavItems("collateral")}
+      onNavigate={onNavigate}
+      headerExtra={walletSlot}
+    >
       <div className="view-section">
         <p className="view-section__title">Demo scenario</p>
         <ScenarioSelector selected={vm.scenario} onSelect={(id) => onScenarioSelect?.(id)} />

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { FacilitySetupVM } from "../../viewmodels/types";
 import { formatMinorToDisplay } from "../format";
 import { GlowCta } from "../primitives/GlowCta";
@@ -12,13 +13,27 @@ export interface FacilitySetupViewProps {
   onFieldChange?: (id: string, value: string) => void;
   onSubmit?: () => void;
   onNavigate?: (id: string) => void;
+  walletSlot?: ReactNode;
 }
 
-export function FacilitySetupView({ vm, onFieldChange, onSubmit, onNavigate }: FacilitySetupViewProps) {
+export function FacilitySetupView({
+  vm,
+  onFieldChange,
+  onSubmit,
+  onNavigate,
+  walletSlot,
+}: FacilitySetupViewProps) {
   const busy = vm.submitState === "busy";
 
   return (
-    <PageShell themeId="vault" title="Facility Setup" navItems={buildNavItems("facility")} onNavigate={onNavigate} dense>
+    <PageShell
+      themeId="vault"
+      title="Facility Setup"
+      navItems={buildNavItems("facility")}
+      onNavigate={onNavigate}
+      headerExtra={walletSlot}
+      dense
+    >
       {vm.fields.map((field) => (
         <InputField
           key={field.id}

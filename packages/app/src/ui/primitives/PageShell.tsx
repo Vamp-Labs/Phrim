@@ -18,10 +18,19 @@ export interface PageShellProps {
   navItems: AppNavItem[];
   onNavigate?: (id: string) => void;
   dense?: boolean;
+  headerExtra?: ReactNode;
   children: ReactNode;
 }
 
-export function PageShell({ themeId, title, navItems, onNavigate, dense = false, children }: PageShellProps) {
+export function PageShell({
+  themeId,
+  title,
+  navItems,
+  onNavigate,
+  dense = false,
+  headerExtra,
+  children,
+}: PageShellProps) {
   const eyebrow = navItems.find((item) => item.current)?.label ?? "Phrim";
 
   return (
@@ -33,6 +42,7 @@ export function PageShell({ themeId, title, navItems, onNavigate, dense = false,
           <div className="app-header__nav-pill">
             <NavPill items={navItems} onSelect={onNavigate} />
           </div>
+          {headerExtra !== undefined ? <div className="app-header__extra">{headerExtra}</div> : null}
           <NavDrawer
             items={navItems.map((item) => ({ id: item.id, label: item.label }))}
             onSelect={onNavigate}
