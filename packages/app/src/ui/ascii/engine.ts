@@ -208,8 +208,8 @@ export class AsciiEngine {
           continue;
         }
 
-        const alpha = Math.min(1, Math.max(0.08, intensity));
-        ctx.fillStyle = `rgba(255, 255, 255, ${alpha.toFixed(3)})`;
+        const alpha = Math.min(0.55, Math.max(0.06, intensity * 0.55));
+        ctx.fillStyle = `rgba(20, 16, 12, ${alpha.toFixed(3)})`;
         ctx.fillText(char, column * cellWidth, row * cellHeight);
       }
     }

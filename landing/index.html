@@ -5,69 +5,330 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Phrim — Private Proof, Enforceable Draw</title>
 <meta name="description" content="Phrim proves a warehouse-facility draw is backed by eligible receivables without exposing the loan tape, then enforces the result on Midnight.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div class="page" id="page">
-  <canvas id="phrim-ascii-bg" class="page__ascii" aria-hidden="true"></canvas>
-  <div class="page__chrome">
-    <header class="header">
-      <button type="button" class="brand-button" aria-label="Phrim home">
-        <img src="assets/logo.webp" alt="" aria-hidden="true">
-      </button>
-      <nav class="nav-pill" aria-label="Primary">
-        <a class="nav-pill__item" href="#workflow" aria-current="page">Workflow</a>
-        <a class="nav-pill__item" href="#metrics">Numbers</a>
+<main class="site noise-overlay">
+  <header class="nav" id="nav">
+    <div class="nav__inner" id="navInner">
+      <a class="nav__brand" href="#">
+        <span class="nav__brand-name">Phrim</span>
+        <span class="nav__brand-tm">TM</span>
+      </a>
+      <nav class="nav__links" aria-label="Primary">
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#security">Security</a>
+        <a href="#developers">Developers</a>
       </nav>
-      <a class="pill-button--dark" href="/app/">Launch App</a>
-      <button type="button" class="hamburger" id="hamburger" aria-expanded="false" aria-controls="drawer" aria-label="Open menu">
-        <span class="hamburger__bar hamburger__bar--top" aria-hidden="true"></span>
-        <span class="hamburger__bar hamburger__bar--bottom" aria-hidden="true"></span>
+      <div class="nav__actions">
+        <a class="btn btn--ghost" href="#developers">Docs</a>
+        <a class="btn btn--primary" href="/app/facility">Launch App</a>
+      </div>
+      <button type="button" class="nav__menu" id="menuBtn" aria-expanded="false" aria-controls="mobileMenu" aria-label="Open menu">
+        <span></span><span></span>
       </button>
-    </header>
+    </div>
+  </header>
 
-    <main class="hero" id="workflow">
-      <h1 class="hero__headline">
-        <span>Private proof of eligible collateral.</span>
-        <span>Enforceable draw. Nothing else disclosed.</span>
+  <div class="mobile-menu" id="mobileMenu" hidden>
+    <a href="#features">Features</a>
+    <a href="#how-it-works">How it works</a>
+    <a href="#security">Security</a>
+    <a href="#developers">Developers</a>
+    <div class="mobile-menu__ctas">
+      <a class="btn btn--primary" href="/app/facility">Launch App</a>
+      <button type="button" class="btn btn--outline" id="menuClose">Close</button>
+    </div>
+  </div>
+
+  <section class="hero" id="hero">
+    <canvas class="hero__sphere" id="heroSphere" aria-hidden="true"></canvas>
+    <div class="hero__grid" aria-hidden="true"></div>
+    <div class="hero__content">
+      <p class="eyebrow reveal"><span class="eyebrow__rule"></span> Private proof for asset-backed credit</p>
+      <h1 class="hero__title reveal">
+        <span class="hero__line">The proof</span>
+        <span class="hero__line">to <span class="hero__rotate" id="rotateWord">prove</span></span>
       </h1>
-      <p class="hero__subhead">A valid private collateral proof releases a draw. An invalid, stale, tampered, or replayed proof cannot move funds or change facility state.</p>
-      <a class="glow-cta" href="/app/facility">Get Started</a>
-    </main>
+      <p class="hero__sub reveal">A valid private collateral proof releases a draw. An invalid, stale, tampered, or replayed proof cannot move funds or change facility state.</p>
+      <div class="hero__ctas reveal">
+        <a class="btn btn--primary btn--lg" href="/app/facility">Get Started</a>
+        <a class="btn btn--outline btn--lg" href="#how-it-works">How it works</a>
+      </div>
+    </div>
+    <div class="hero__marquee" aria-hidden="true">
+      <div class="marquee-track">
+        <span><strong>Midnight</strong> settlement</span>
+        <span><strong>ZK</strong> circuits</span>
+        <span><strong>Attested</strong> credentials</span>
+        <span><strong>Nullifier</strong> safety</span>
+        <span><strong>Midnight</strong> settlement</span>
+        <span><strong>ZK</strong> circuits</span>
+        <span><strong>Attested</strong> credentials</span>
+        <span><strong>Nullifier</strong> safety</span>
+      </div>
+    </div>
+  </section>
 
-    <footer class="metrics" id="metrics" aria-label="Phrim demo figures">
-      <div class="metric" data-glyph="&lt;" data-prefix="$" data-target="75000" data-decimals="0">
-        <span class="metric__glyph" aria-hidden="true">&lt;</span>
-        <span class="metric__value">$0</span>
-        <span class="metric__label">Demo draw amount</span>
+  <section class="section" id="features">
+    <div class="section__inner">
+      <header class="section__header reveal">
+        <p class="eyebrow"><span class="eyebrow__rule"></span> Capabilities</p>
+        <h2 class="section__title">Built for private <span class="muted">borrowing-base draws</span></h2>
+      </header>
+      <div class="feature-list">
+        <article class="feature-row reveal">
+          <span class="feature-row__num">01</span>
+          <div class="feature-row__copy">
+            <h3>Private collateral proof</h3>
+            <p>Prove receivables satisfy lender rules without exposing the loan tape.</p>
+          </div>
+          <div class="feature-row__visual" aria-hidden="true">░▒▓█</div>
+        </article>
+        <article class="feature-row reveal">
+          <span class="feature-row__num">02</span>
+          <div class="feature-row__copy">
+            <h3>Enforceable draw gate</h3>
+            <p>Valid proofs release draws. Invalid, stale, or replayed proofs cannot settle.</p>
+          </div>
+          <div class="feature-row__visual" aria-hidden="true">├─┤</div>
+        </article>
+        <article class="feature-row reveal">
+          <span class="feature-row__num">03</span>
+          <div class="feature-row__copy">
+            <h3>Attested credentials</h3>
+            <p>Signed credential batches with privacy tags — eligible, never over-disclosed.</p>
+          </div>
+          <div class="feature-row__visual" aria-hidden="true">※※※</div>
+        </article>
+        <article class="feature-row reveal">
+          <span class="feature-row__num">04</span>
+          <div class="feature-row__copy">
+            <h3>Midnight settlement</h3>
+            <p>Onchain enforcement with nullifiers and facility-state integrity.</p>
+          </div>
+          <div class="feature-row__visual" aria-hidden="true">◈◆◇</div>
+        </article>
       </div>
-      <div class="metric" data-glyph="%" data-suffix="%" data-target="80" data-decimals="0">
-        <span class="metric__glyph" aria-hidden="true">%</span>
-        <span class="metric__value">0%</span>
-        <span class="metric__label">Advance rate applied</span>
-      </div>
-      <div class="metric" data-glyph="*" data-target="8" data-decimals="0">
-        <span class="metric__glyph" aria-hidden="true">*</span>
-        <span class="metric__value">0</span>
-        <span class="metric__label">Signed credentials per batch</span>
-      </div>
-      <div class="metric" data-glyph="#" data-static="&lt; 60s">
-        <span class="metric__glyph" aria-hidden="true">#</span>
-        <span class="metric__value">&lt; 60s</span>
-        <span class="metric__label">Target proof latency (PRD §19)</span>
-      </div>
-    </footer>
-  </div>
-</div>
+    </div>
+  </section>
 
-<div class="drawer-backdrop" id="drawerBackdrop" hidden>
-  <div class="drawer-sheet" id="drawerSheet" role="dialog" aria-modal="true" aria-label="Navigation">
-    <a href="#workflow">Workflow</a>
-    <a href="#metrics">Numbers</a>
-    <a href="/app/">Launch App</a>
-  </div>
-</div>
+  <section class="how band-inverted" id="how-it-works">
+    <div class="section__inner how__inner">
+      <header class="section__header reveal">
+        <p class="eyebrow eyebrow--on-dark"><span class="eyebrow__rule"></span> Workflow</p>
+        <h2 class="section__title">From facility to settlement</h2>
+      </header>
+      <div class="how__grid">
+        <div class="how__steps" id="howSteps" role="list">
+          <button type="button" class="how-step is-active" data-step="0" role="listitem">
+            <span class="how-step__num">I</span>
+            <span class="how-step__body">
+              <strong>Create &amp; fund facility</strong>
+              <span>Set policy fields and fund the vault.</span>
+            </span>
+            <span class="how-step__bar" aria-hidden="true"></span>
+          </button>
+          <button type="button" class="how-step" data-step="1" role="listitem">
+            <span class="how-step__num">II</span>
+            <span class="how-step__body">
+              <strong>Load private collateral</strong>
+              <span>Import attested credentials — values stay masked.</span>
+            </span>
+            <span class="how-step__bar" aria-hidden="true"></span>
+          </button>
+          <button type="button" class="how-step" data-step="2" role="listitem">
+            <span class="how-step__num">III</span>
+            <span class="how-step__body">
+              <strong>Prove &amp; request draw</strong>
+              <span>Generate a private proof and submit the draw.</span>
+            </span>
+            <span class="how-step__bar" aria-hidden="true"></span>
+          </button>
+          <button type="button" class="how-step" data-step="3" role="listitem">
+            <span class="how-step__num">IV</span>
+            <span class="how-step__body">
+              <strong>Settle &amp; inspect history</strong>
+              <span>Funds move only on valid proof; review receipts.</span>
+            </span>
+            <span class="how-step__bar" aria-hidden="true"></span>
+          </button>
+        </div>
+        <aside class="code-panel reveal" aria-label="Example draw flow">
+          <div class="code-panel__chrome">
+            <span class="code-panel__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="code-panel__file">draw-flow.ts</span>
+            <span class="code-panel__live"><span class="live-dot"></span> Ready</span>
+          </div>
+          <pre class="code-panel__body"><code id="howCode"></code></pre>
+        </aside>
+      </div>
+    </div>
+  </section>
 
+  <section class="section metrics-section" id="metrics" aria-label="Phrim demo figures">
+    <div class="section__inner">
+      <header class="metrics-section__header reveal">
+        <div>
+          <p class="eyebrow"><span class="eyebrow__rule"></span> Numbers</p>
+          <h2 class="section__title">Demo figures</h2>
+        </div>
+        <div class="live-pill"><span class="live-dot"></span> <span id="liveClock" class="mono">Live</span></div>
+      </header>
+      <div class="metrics-grid">
+        <div class="metric-cell reveal" data-prefix="$" data-target="75000" data-decimals="0">
+          <span class="metric-cell__value">$0</span>
+          <span class="metric-cell__label">Demo draw amount</span>
+        </div>
+        <div class="metric-cell reveal" data-suffix="%" data-target="80" data-decimals="0">
+          <span class="metric-cell__value">0%</span>
+          <span class="metric-cell__label">Advance rate applied</span>
+        </div>
+        <div class="metric-cell reveal" data-target="8" data-decimals="0">
+          <span class="metric-cell__value">0</span>
+          <span class="metric-cell__label">Signed credentials per batch</span>
+        </div>
+        <div class="metric-cell reveal" data-static="&lt; 60s">
+          <span class="metric-cell__value">&lt; 60s</span>
+          <span class="metric-cell__label">Target proof latency</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tint" id="security">
+    <div class="section__inner security__inner">
+      <div class="security__copy reveal">
+        <p class="eyebrow"><span class="eyebrow__rule"></span> Security</p>
+        <h2 class="section__title">Privacy by construction</h2>
+        <p class="lead">Zero tape disclosure. Proof validity gates settlement. Attestors and nullifiers keep replay off the table.</p>
+        <div class="cert-chips">
+          <span>Midnight</span>
+          <span>ZK circuits</span>
+          <span>Nullifiers</span>
+          <span>Attestation</span>
+        </div>
+      </div>
+      <div class="security__list">
+        <article class="security-row reveal">
+          <span class="security-row__icon" aria-hidden="true">▣</span>
+          <div>
+            <h3>Zero tape disclosure</h3>
+            <p>Eligible totals and draw support without revealing customer-level receivables.</p>
+          </div>
+        </article>
+        <article class="security-row reveal">
+          <span class="security-row__icon" aria-hidden="true">⬡</span>
+          <div>
+            <h3>Proof-gated settlement</h3>
+            <p>Only a valid private proof can move funds or change facility state.</p>
+          </div>
+        </article>
+        <article class="security-row reveal">
+          <span class="security-row__icon" aria-hidden="true">※</span>
+          <div>
+            <h3>Attestor keys</h3>
+            <p>Credential batches are signed; invalid signatures fail the path.</p>
+          </div>
+        </article>
+        <article class="security-row reveal">
+          <span class="security-row__icon" aria-hidden="true">◎</span>
+          <div>
+            <h3>Nullifier integrity</h3>
+            <p>Consumed nullifiers block replay across epochs and draws.</p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="developers">
+    <div class="section__inner developers__inner">
+      <div class="developers__copy reveal">
+        <p class="eyebrow"><span class="eyebrow__rule"></span> Developers</p>
+        <h2 class="section__title">Schema, prove, submit</h2>
+        <p class="lead">Circuit bindings, golden vectors, wallet adapter, and attestation server — one coherent demo path.</p>
+        <div class="dev-grid">
+          <div class="dev-cell"><span class="mono">01</span><strong>Circuit binding</strong></div>
+          <div class="dev-cell"><span class="mono">02</span><strong>Golden vectors</strong></div>
+          <div class="dev-cell"><span class="mono">03</span><strong>Wallet adapter</strong></div>
+          <div class="dev-cell"><span class="mono">04</span><strong>Attestation</strong></div>
+        </div>
+        <div class="dev-links">
+          <a href="https://github.com" class="text-link">Read the docs</a>
+          <a href="https://github.com" class="text-link">View on GitHub</a>
+        </div>
+      </div>
+      <aside class="code-panel code-panel--light reveal">
+        <div class="code-panel__tabs" role="tablist">
+          <button type="button" class="is-active" data-tab="0" role="tab">Schema</button>
+          <button type="button" data-tab="1" role="tab">Prove</button>
+          <button type="button" data-tab="2" role="tab">Submit</button>
+        </div>
+        <pre class="code-panel__body"><code id="devCode"></code></pre>
+      </aside>
+    </div>
+  </section>
+
+  <section class="section" id="cta">
+    <div class="section__inner">
+      <div class="cta-frame reveal" id="ctaFrame">
+        <div class="cta-frame__spotlight" id="ctaSpotlight" aria-hidden="true"></div>
+        <div class="cta-frame__corners" aria-hidden="true"></div>
+        <div class="cta-frame__copy">
+          <h2 class="section__title">Prove eligibility.<br>Draw with confidence.</h2>
+          <p class="lead">Launch the borrower demo — facility, collateral, prove, settle.</p>
+          <div class="hero__ctas">
+            <a class="btn btn--primary btn--lg" href="/app/facility">Launch demo</a>
+            <a class="btn btn--outline btn--lg" href="#how-it-works">View workflow</a>
+          </div>
+          <p class="cta-frame__meta mono">Demo walkthrough · Midnight network</p>
+        </div>
+        <canvas class="cta-frame__ascii" id="ctaAscii" aria-hidden="true"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <canvas class="footer__wave" id="footerWave" aria-hidden="true"></canvas>
+    <div class="section__inner footer__inner">
+      <div class="footer__brand">
+        <span class="nav__brand-name">Phrim</span>
+        <p>Privacy-preserving borrowing-base draw gate on Midnight.</p>
+      </div>
+      <div class="footer__cols">
+        <div>
+          <h4>Product</h4>
+          <a href="#features">Features</a>
+          <a href="#how-it-works">How it works</a>
+          <a href="#metrics">Numbers</a>
+          <a href="#security">Security</a>
+        </div>
+        <div>
+          <h4>Developers</h4>
+          <a href="#developers">Documentation</a>
+          <a href="/app/facility">Launch App</a>
+          <a href="#developers">Schema</a>
+        </div>
+        <div>
+          <h4>Resources</h4>
+          <a href="#cta">Demo</a>
+          <a href="#security">Privacy</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <div class="section__inner footer__bottom-inner">
+        <span>© <span id="year">2026</span> Phrim</span>
+        <span class="live-pill"><span class="live-dot"></span> All systems operational</span>
+      </div>
+    </div>
+  </footer>
+</main>
 <script src="main.js"></script>
 </body>
 </html>

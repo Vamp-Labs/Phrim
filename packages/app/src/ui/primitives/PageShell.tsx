@@ -22,8 +22,10 @@ export interface PageShellProps {
 }
 
 export function PageShell({ themeId, title, navItems, onNavigate, dense = false, children }: PageShellProps) {
+  const eyebrow = navItems.find((item) => item.current)?.label ?? "Phrim";
+
   return (
-    <div className="page">
+    <div className="page noise-overlay">
       <AsciiBackground theme={themeId} />
       <div className="page__chrome">
         <header className="app-header">
@@ -37,7 +39,13 @@ export function PageShell({ themeId, title, navItems, onNavigate, dense = false,
           />
         </header>
         <div className={`page__content${dense ? " page__content--dense" : ""}`}>
-          <h1 className="visually-hidden">{title}</h1>
+          <header className="page-title">
+            <p className="page-title__eyebrow">
+              <span className="page-title__rule" aria-hidden="true" />
+              {eyebrow}
+            </p>
+            <h1 className="page-title__heading">{title}</h1>
+          </header>
           {children}
         </div>
       </div>
