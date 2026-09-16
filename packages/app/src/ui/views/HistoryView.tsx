@@ -12,6 +12,7 @@ export interface HistoryViewProps {
   vm: HistoryVM;
   onNavigate?: (id: string) => void;
   walletSlot?: ReactNode;
+  contractExplorerUrl?: string | null;
 }
 
 function statusGlyph(status: HistoryVM["status"]): string {
@@ -51,7 +52,7 @@ const COLUMNS: DataTableColumn<DrawReceiptVM>[] = [
   },
 ];
 
-export function HistoryView({ vm, onNavigate, walletSlot }: HistoryViewProps) {
+export function HistoryView({ vm, onNavigate, walletSlot, contractExplorerUrl }: HistoryViewProps) {
   return (
     <PageShell
       themeId="merkle-dag"
@@ -87,6 +88,18 @@ export function HistoryView({ vm, onNavigate, walletSlot }: HistoryViewProps) {
           />
         )}
         <p className="view-caveat">No private customer-level collateral record is shown on this page.</p>
+        {contractExplorerUrl ? (
+          <p className="view-caveat">
+            <a
+              className="metric-card__link"
+              href={contractExplorerUrl}
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              Verify this facility on Midnight Explorer ↗
+            </a>
+          </p>
+        ) : null}
       </div>
     </PageShell>
   );

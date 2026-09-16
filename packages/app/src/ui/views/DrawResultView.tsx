@@ -13,9 +13,16 @@ export interface DrawResultViewProps {
   onViewHistory?: () => void;
   onNavigate?: (id: string) => void;
   walletSlot?: ReactNode;
+  contractExplorerUrl?: string | null;
 }
 
-export function DrawResultView({ vm, onViewHistory, onNavigate, walletSlot }: DrawResultViewProps) {
+export function DrawResultView({
+  vm,
+  onViewHistory,
+  onNavigate,
+  walletSlot,
+  contractExplorerUrl,
+}: DrawResultViewProps) {
   const funded = vm.outcome === "funded";
 
   return (
@@ -50,7 +57,11 @@ export function DrawResultView({ vm, onViewHistory, onNavigate, walletSlot }: Dr
           <div className="view-section">
             <p className="view-section__title">Onchain reference</p>
             <div className="metric-row grid-hairline">
-              <MetricCard label="Contract address" value={truncateMiddle(vm.contractAddress)} />
+              <MetricCard
+                label="Contract address"
+                value={truncateMiddle(vm.contractAddress)}
+                {...(contractExplorerUrl ? { href: contractExplorerUrl, hrefLabel: "View on Midnight Explorer" } : {})}
+              />
               <MetricCard label="Transaction id" value={truncateMiddle(vm.txId)} />
             </div>
           </div>

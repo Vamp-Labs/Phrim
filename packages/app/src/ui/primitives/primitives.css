@@ -236,6 +236,35 @@ input:disabled,
   flex: none;
   display: flex;
   align-items: center;
+  gap: var(--space-sm);
+}
+
+.explorer-header-link {
+  font-family: var(--font-ui);
+  font-size: var(--size-meta);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+
+.explorer-header-link:hover {
+  color: var(--text);
+}
+
+.explorer-header-link__short {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .explorer-header-link__full {
+    display: none;
+  }
+
+  .explorer-header-link__short {
+    display: inline;
+  }
 }
 
 .wallet-connect-group {
@@ -657,6 +686,19 @@ input:disabled,
 
 .metric-row .metric-card {
   border: none;
+}
+
+.metric-card__link {
+  font-family: var(--font-ui);
+  font-size: var(--size-meta);
+  color: var(--text);
+  border-bottom: 1px solid var(--border-strong);
+  align-self: flex-start;
+  transition: border-color var(--duration-fast) var(--ease-standard);
+}
+
+.metric-card__link:hover {
+  border-bottom-color: var(--text);
 }
 
 .metric-card__label {

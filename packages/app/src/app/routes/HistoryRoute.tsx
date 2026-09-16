@@ -11,6 +11,7 @@ import { getConfiguredContractAddress } from '../midnight/contractAddress';
 import { readPhrimLedgerState } from '../midnight/contractClient';
 import { resolveNetworkEndpoints } from '../midnight/network';
 import { bytesToHex } from '../midnight/hex';
+import { contractExplorerUrl } from '../midnight/explorer';
 
 const PHRIM_DEMO_NETWORK_ID = 'preprod';
 
@@ -66,6 +67,10 @@ export function HistoryRoute() {
       vm={vm ?? MOCK_HISTORY_ACTIVE_WITH_RECEIPTS}
       onNavigate={(id) => navigate(`/${id}`)}
       walletSlot={<WalletHeaderSlot />}
+      contractExplorerUrl={contractExplorerUrl(
+        PHRIM_DEMO_NETWORK_ID,
+        getConfiguredContractAddress(PHRIM_DEMO_NETWORK_ID) ?? '',
+      )}
     />
   );
 }
