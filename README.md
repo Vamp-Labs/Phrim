@@ -304,6 +304,29 @@ separate, disposable process via `.restore(...)`. Its very first state emission 
 millions), not from `0` — conclusive proof that resumption skips already-covered history rather than
 rescanning from genesis.
 
+### The sync checkpoint can corrupt, and the only recovery is a full resync
+
+A checkpoint that is written while a process is being killed — or written by two processes racing on
+the same file — can land in a state the SDK cannot resume from. The symptom is unambiguous and does
+not self-heal:
+
+```
+Wallet.Other: Error while applying sync update
+  cause: values inserted non-linearly into dust commitment tree;
+         expected to insert index 1120302, but received 1120282.
+```
+
+The Dust and Zswap commitment trees are strictly append-only, so once the checkpoint's position
+disagrees with the event stream the indexer replays, every retry fails identically — observed here as
+176 consecutive failures with the same index mismatch, with the process alive but burning no CPU. It
+is not a network fault, not a Dust shortage, and not a code defect; `curl` against the Preprod indexer
+during the failure returned a normal `405` in 0.22s.
+
+**Recovery:** stop the process, move `.keys/wallet-sync-state.json` aside, and re-run. The wallet
+resyncs from genesis (see the multi-hour cost above) and writes a fresh, valid checkpoint. Do not run
+two processes against the same checkpoint file concurrently — copy it aside first if you need to
+inspect wallet state while another run is in flight.
+
 **Conclusion: the multi-hour wallet sync is a one-time cost per wallet, not a per-rehearsal cost.**
 Once `.keys/wallet-sync-state.json` exists and is kept (it is deliberately outside any path this
 repository's `reset.ts`/`deploy.ts` deletes), every subsequent `deploy`/`reset` invocation resumes from
